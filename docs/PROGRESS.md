@@ -134,3 +134,21 @@ Lens/
 - **TopBar.tsx**: Scope text changed from `font-mono` to `font-sans` (Inter). Wave scope turned into a dropdown (`Waves: All (3)`, `Oct-25`, `Jan-26`, `Apr-26`) wired to the store; `Market: India` remains display-only.
 - **Verification**: `npm run typecheck`, `npm test` (11/11 passing), `npm run build` all pass.
 - **Persistence**: Selecting a wave scope (e.g. `Apr-26`) persists across page reloads via localStorage.
+
+## 8. Phase 2B (Cross-tabs Table)
+- **New `src/store/useLensStore.ts`**: Added `crossTab` state with `row`, `column`, `filters`, `stat` (`colpct`/`counts`), `decimals` (0/1) plus `setCrossTab` setter. All persisted via localStorage.
+- **New `src/pages/CrossTabs.tsx`**: Full cross-tabs table page:
+  - Left panel (260px card): search box, questions grouped by section (Profile, Brand funnel, Consumption, Attitudes, Advocacy) with per-section counts, fixed-width type tags (SINGLE/MULTI/NUMERIC/GRID/SCALE), click to set row.
+  - Layout bar: Rows dropdown, Columns dropdown (Total + Wave/Age group/Gender/City type/SEC), filter chips with remove, "+ Add filter" (disabled stub), Column % | Counts toggle, Weighted switch (uses store.weighted), Decimals 0/1. Wraps if narrow.
+  - Wave scope from store applies as filter except when Columns = Wave (shows "Wave columns show all waves" note).
+  - Definition line: always matches state (e.g. "Showing Brand awareness by Wave · all respondents · weighted · column % · significance vs previous wave at 95%").
+  - Table card: Total column first, question wording as header, Campa row highlighted with "Focus brand" tag for brand questions, ▲ green / ▼ red from engine significance, hidden cells show "–", base rows (unweighted/weighted) in monospace, right-aligned numbers, horizontal scroll for wide tables.
+  - Footnote: wording, base, weighting, significance rule, "cells with a base under 30 are hidden".
+  - All numbers computed exclusively by `src/engine/crosstab.ts` — no hard-coded numbers.
+- **Verification values** (all match engine tests):
+  - Default Q1 × Wave: Campa 67/58/66▲/77▲, Pepsi 90/92/88▼/91, bases 1,860/600/620/640
+  - Scope Apr-26, Q1 × Age: Campa 80/77/73/78, bases 171/221/157/91
+  - Scope Apr-26, Q3 × Total: Coca-Cola 28, Thums Up 26, Pepsi 22, Campa 14, Sprite 12
+  - Q5 × Wave: 5.5/5.4/5.8, no arrows
+  - Weighted off: definition line shows "unweighted", numbers change
+- **Checks**: `npm run typecheck`, `npm test` (11/11 passing), `npm run build` all pass.
