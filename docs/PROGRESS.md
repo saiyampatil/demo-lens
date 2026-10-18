@@ -123,3 +123,14 @@ Lens/
 ## 6. Decisions & Implementation Notes
 - **TypeScript 6.0 compatibility**: Removed deprecated `"baseUrl": "."` in `tsconfig.json` and `tsconfig.app.json` while retaining `@/*` path mapping; utilized `type`-only imports in engine files to conform with `verbatimModuleSyntax`.
 - **Vitest configuration**: Configured directly in `vite.config.ts` with `environment: 'node'` and `globals: true` to share path aliases and Vite `?raw` loaders seamlessly between tests and the browser bundle.
+
+## 7. Phase 2A (Store and Scope)
+- **index.html**: Page title changed from `temp-scaffold` to `Pulse AI Lens`.
+- **New `src/store/useLensStore.ts`**: Zustand store with `persist` middleware (localStorage) holding:
+  - `waveScope`: `"All" | "Oct-25" | "Jan-26" | "Apr-26"` (default `"All"`)
+  - `weighted`: boolean (default `true`)
+  - `savedResults`: array (empty for now)
+  - Setters: `setWaveScope`, `setWeighted`, `addSavedResult`
+- **TopBar.tsx**: Scope text changed from `font-mono` to `font-sans` (Inter). Wave scope turned into a dropdown (`Waves: All (3)`, `Oct-25`, `Jan-26`, `Apr-26`) wired to the store; `Market: India` remains display-only.
+- **Verification**: `npm run typecheck`, `npm test` (11/11 passing), `npm run build` all pass.
+- **Persistence**: Selecting a wave scope (e.g. `Apr-26`) persists across page reloads via localStorage.
