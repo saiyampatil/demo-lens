@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=1440, initial-scale=1.0" name="viewport"/>
+<title>Pulse AI Lens</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Inter+Tight:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          "tertiary-fixed": "#e6deff",
+          "surface-dim": "#d6dae5",
+          "inverse-surface": "#2b3139",
+          "secondary": "#5f5d6b",
+          "surface-bright": "#f8f9ff",
+          "on-error-container": "#93000a",
+          "on-surface-variant": "#494554",
+          "primary-fixed": "#e7deff",
+          "tertiary": "#4e2fb8",
+          "on-tertiary-fixed": "#1d0061",
+          "surface-container-high": "#e4e8f4",
+          "on-tertiary": "#ffffff",
+          "on-secondary-fixed": "#1c1a26",
+          "surface-tint": "#6641d1",
+          "inverse-on-surface": "#ecf1fc",
+          "outline": "#7a7485",
+          "on-secondary-container": "#656271",
+          "outline-variant": "#cac3d6",
+          "surface-container-low": "#eff3ff",
+          "on-tertiary-fixed-variant": "#4929b3",
+          "on-primary": "#ffffff",
+          "primary-container": "#6b47d6",
+          "surface-container": "#e9eef9",
+          "on-primary-fixed": "#1f005f",
+          "secondary-fixed": "#e5e0f2",
+          "on-tertiary-container": "#e4dbff",
+          "on-background": "#171c24",
+          "on-error": "#ffffff",
+          "on-primary-container": "#e5dbff",
+          "tertiary-container": "#664bd1",
+          "primary": "#6B47D6",
+          "surface-variant": "#dee2ee",
+          "secondary-container": "#e5e0f2",
+          "tertiary-fixed-dim": "#cabeff",
+          "on-secondary-fixed-variant": "#474553",
+          "on-primary-fixed-variant": "#4e22b8",
+          "error": "#ba1a1a",
+          "secondary-fixed-dim": "#c8c4d5",
+          "on-secondary": "#ffffff",
+          "surface": "#f8f9ff",
+          "on-surface": "#171c24",
+          "primary-fixed-dim": "#cdbdff",
+          "error-container": "#ffdad6",
+          "inverse-primary": "#cdbdff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-highest": "#dee2ee",
+          "background": "#F7F7F5",
+          "bordercol": "#E8E6EE",
+          "ink": "#1A1A1A",
+          "muted": "#717680",
+          "lightpurple": "#F1ECFE",
+          "success": "#15803D",
+          "warning": "#B45309"
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px",
+          "card": "14px",
+          "btn": "10px"
+        },
+        spacing: {
+          "space-xs": "0.25rem",
+          "space-sm": "0.5rem",
+          "space-md": "0.75rem",
+          "space-lg": "1.25rem",
+          "space-xl": "1.75rem",
+          "gutter": "1.25rem",
+          "margin": "2rem"
+        },
+        fontFamily: {
+          "sans": ["Inter", "sans-serif"],
+          "heading": ["\"Inter Tight\"", "sans-serif"],
+          "mono": ["\"JetBrains Mono\"", "monospace"],
+          "metric-display": ["Inter"],
+          "headline-xl": ["Inter"],
+          "headline-lg": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-sm": ["Inter"],
+          "body-lg": ["Inter"],
+          "body-md": ["Inter"],
+          "body-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "label-sm": ["Inter"],
+          "code-sm": ["JetBrains Mono"],
+          "code-xs": ["JetBrains Mono"]
+        },
+        fontSize: {
+          "metric-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+          "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+          "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+          "headline-sm": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+          "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+          "code-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+          "code-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0em", "fontWeight": "400" }]
+        }
+      }
+    }
+  };
+</script>
+<style>
+  @layer base {
+    html {
+      overscroll-behavior: none;
+    }
+    body {
+      background-color: #F7F7F5;
+      color: #1A1A1A;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+    }
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+<meta content="web_dashboard" name="shell-type"/>
+</head>
+<body class="bg-background font-sans text-ink min-h-screen antialiased">
+<!-- Left Sidebar (240px fixed) -->
+<aside class="fixed top-0 bottom-0 left-0 w-[240px] bg-white border-r border-bordercol flex flex-col justify-between z-30">
+<div>
+<!-- App Header & Logo -->
+<div class="h-[52px] px-5 border-b border-bordercol flex items-center gap-3">
+<img alt="Pulse AI Lens Logo" class="w-7 h-7 rounded-md object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1WMru1g54tWiNGh1btfIfPDn1QlnjCKk_xc4WrE6ZtGbkIPrX7-3TZmuspoofQwXV61iCx_B0t3Ico5E95APWm5s0ksIVdYLbW0x4zYJI18RyDsn6q7RXAB1NaMOoydAEwodQRu2f3mG9lVbc8mCqpd7mKfshJbHPnL0zjTctS77f156hwSxl-inVBApZGj_yrheDXmbbmmNh78Z5eV1cOeOrIeovm2Omc0S4j_z2vLyzvKDfGBq0Y2Bw"/>
+<span class="font-heading font-bold text-base tracking-tight text-ink">Pulse AI Lens</span>
+</div>
+<!-- Project Switcher -->
+<div class="px-3 py-3 border-b border-bordercol">
+<div class="flex items-center justify-between px-2.5 py-2 rounded-btn bg-background border border-bordercol hover:border-outline-variant cursor-pointer transition-colors">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>
+<span class="font-label-md text-label-md text-ink truncate">Campa Beverage Tracker</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-muted flex-shrink-0">expand_more</span>
+</div>
+</div>
+<!-- Navigation List (Text-only links with active data-path bindings) -->
+<nav class="p-3 space-y-1" data-active-classes="bg-lightpurple text-primary font-semibold font-label-md" id="sidebar-nav">
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="home" href="#">
+        Home
+      </a>
+<a aria-current="page" class="flex items-center px-3 py-2 rounded-btn transition-colors bg-lightpurple text-primary font-semibold font-label-md" data-path="waves" href="#">
+        Waves
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="cross-tabs" href="#">
+        Cross-tabs
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="ask-ai" href="#">
+        Ask AI
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="visualize" href="#">
+        Visualize
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="weights" href="#">
+        Weights
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="storyboards" href="#">
+        Storyboards
+      </a>
+</nav>
+</div>
+<!-- User Profile Row -->
+<div class="p-3 border-t border-bordercol bg-white">
+<div class="flex items-center justify-between p-2 rounded-btn hover:bg-background transition-colors cursor-pointer">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-lightpurple text-primary font-semibold font-label-md text-label-md flex items-center justify-center border border-primary/20">
+          R
+        </div>
+<div class="flex flex-col text-left">
+<span class="font-label-md text-label-md font-semibold text-ink leading-tight">Researcher</span>
+<span class="font-label-sm text-label-sm text-muted">Insights Lead</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-muted">more_horiz</span>
+</div>
+</div>
+</aside>
+<!-- Header Top Bar (fixed 52px, offset 240px) -->
+<header class="fixed top-0 left-[240px] right-0 z-20 bg-white border-b border-bordercol">
+<div class="h-[52px] px-6 flex items-center justify-between">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 font-label-md text-label-md">
+<span class="text-muted font-normal">Campa Beverage Tracker</span>
+<span class="text-muted/50">/</span>
+<span class="text-ink font-semibold active-page-breadcrumb" id="page-breadcrumb-title">Workspace</span>
+</div>
+<!-- Right Scope Selector & Action -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-btn bg-background border border-bordercol font-label-md text-label-md">
+<span class="text-muted">Scope:</span>
+<span class="font-medium text-ink">Market: India</span>
+<span class="text-muted/40">·</span>
+<span class="font-medium text-ink">Waves: All (W1–W8)</span>
+<span class="material-symbols-outlined text-[15px] text-muted ml-0.5">expand_more</span>
+</div>
+<button class="w-8 h-8 rounded-btn border border-bordercol flex items-center justify-center text-muted hover:text-ink hover:bg-background transition-colors" title="Open in external view">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Analytical Canvas (pt matches header height h-[52px], pl matches sidebar w-[240px]) -->
+<main class="pl-[240px] pt-[52px] min-h-screen bg-background">
+<div class="w-full max-w-[1440px] p-6 mx-auto">
+<div class="flex flex-col w-full">
+<div class="max-w-6xl mx-auto w-full space-y-8 py-2">
+<!-- Header Block -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Waves · upload and manage research</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-semibold tracking-wide uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Live Ingestion
+        </span>
+</div>
+<p class="font-body-md text-body-md text-secondary">
+        Maintain survey taxonomy, weighting schemes, and harmonize multi-year dataset releases.
+      </p>
+</div>
+<!-- Market Setup Section Card -->
+<section class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 relative overflow-hidden">
+<!-- Top Subtle Decorative Accent -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-tertiary-container to-surface-container-high opacity-70"></div>
+<!-- Card Top Bar -->
+<div class="flex flex-wrap items-center justify-between gap-4 pb-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Market setup</h2>
+<span class="font-label-sm text-label-sm text-secondary">Taxonomy baseline &amp; harmonized variables</span>
+</div>
+<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+            Global configuration
+          </span>
+</div>
+<!-- Market Dropdown Selector -->
+<div class="relative inline-block text-left">
+<button class="inline-flex items-center gap-2.5 px-3.5 py-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg transition-colors cursor-pointer" id="market-toggle-btn" type="button">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-semibold">Market: India</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Setup Rows with Background Shift Separation -->
+<div class="space-y-2 pt-2">
+<!-- Row 1: Data map -->
+<div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors gap-3">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">table_chart</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Data map — campa_datamap.xlsx</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-medium">
+                  Verified (v3.2)
+                </span>
+</div>
+<span class="font-code-xs text-code-xs text-secondary mt-0.5">Primary dictionary · 184 harmonized variable keys · SHA-256 validated</span>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-high font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+              Download
+            </button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+              Replace
+            </button>
+</div>
+</div>
+<!-- Row 2: Questionnaire -->
+<div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors gap-3">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-error-container/40 flex items-center justify-center text-error flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">assignment</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Questionnaire — not set</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+                  Missing
+                </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary mt-0.5">Required for semantic label auto-matching and question text extraction</span>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary hover:bg-tertiary text-on-primary font-label-md text-label-md shadow-sm transition-all hover:shadow" type="button">
+<span class="material-symbols-outlined text-[16px]">upload</span>
+              Upload
+            </button>
+</div>
+</div>
+<!-- Row 3: Open-ended codeframe -->
+<div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors gap-3">
+<div class="flex items-center gap-3.5 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">category</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Open-ended codeframe — optional</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm">
+                  Not configured
+                </span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary mt-0.5">Verbatim coding dictionary for unstructured spontaneous brand recall questions</span>
+</div>
+</div>
+<div class="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">upload_file</span>
+              Upload
+            </button>
+</div>
+</div>
+</div>
+<!-- Explanatory Caption -->
+<div class="mt-5 pt-4 flex items-center gap-2.5 text-secondary">
+<span class="material-symbols-outlined text-[18px] text-primary flex-shrink-0">info</span>
+<p class="font-body-sm text-body-sm">
+          Every wave is read through these, so an answer means the same thing across years.
+        </p>
+</div>
+</section>
+<!-- Uploaded Waves Workspace -->
+<section class="space-y-4">
+<!-- Section Action Header -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<h2 class="font-headline-md text-headline-md text-on-surface">Uploaded waves</h2>
+<span class="w-5 h-5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold flex items-center justify-center tabular-nums">
+            3
+          </span>
+</div>
+<button class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-tertiary text-on-primary font-label-md text-label-md shadow-sm transition-all hover:shadow cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Add wave</span>
+</button>
+</div>
+<!-- Wave Cards Stack -->
+<div class="space-y-3.5">
+<!-- Card 1: Apr-26 (EXPANDED View) -->
+<article class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm space-y-4 transition-all">
+<!-- Top Row -->
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-2.5 min-w-0">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Apr-26</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-label-sm text-label-sm">
+                India
+              </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-label-sm text-label-sm tabular-nums">
+                n=640
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Ready
+              </span>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container-low px-2 py-0.5 rounded">
+                Active Baseline
+              </span>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center gap-1">
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Replace wave raw file" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+                Replace
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Download ingested dataset" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                Download
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-error hover:bg-error-container/40 font-label-md text-label-md transition-colors" title="Remove wave" type="button">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+                Delete
+              </button>
+</div>
+</div>
+<!-- Expanded Detail Surface -->
+<div class="bg-surface-container-low rounded-xl p-4 space-y-4">
+<!-- Taxonomy Status Indicator -->
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2">
+<span class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">
+                  23 questions · all matched to previous wave
+                </span>
+</div>
+<span class="font-code-xs text-code-xs text-secondary">
+                100% Taxon Alignment · 0 Imputations Required
+              </span>
+</div>
+<!-- Metadata Metrics Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<div class="p-3 bg-surface-container-lowest rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary block">Fieldwork Window</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold mt-0.5 block tabular-nums">01 Apr – 22 Apr 2026</span>
+<span class="font-code-xs text-code-xs text-secondary">22 collection days</span>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary block">Weighting Scheme</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold mt-0.5 block">Rim-weighted</span>
+<span class="font-code-xs text-code-xs text-secondary">Gender × Age × SEC</span>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary block">Weight Efficiency</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-body-md text-body-md text-on-surface font-semibold tabular-nums">1.04 eff</span>
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+</div>
+<span class="font-code-xs text-code-xs text-secondary">Design effect = 1.08</span>
+</div>
+<div class="p-3 bg-surface-container-lowest rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary block">Data Binary Artifact</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold mt-0.5 block truncate">campa_w8_apr26_final.sav</span>
+<span class="font-code-xs text-code-xs text-secondary tabular-nums">SPSS Statistics · 4.2 MB</span>
+</div>
+</div>
+<!-- Ingestion Wave Visual Sparkline Ribbon -->
+<div class="p-3 bg-surface-container-lowest rounded-lg shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary">Harmonization Coverage</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tabular-nums">640 / 640 Cases</span>
+</div>
+<!-- Inline SVG Bar Representation -->
+<div class="w-36 h-2 rounded-full bg-surface-container-high overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 100%;"></div>
+</div>
+</div>
+<div class="flex items-center gap-4 text-secondary">
+<span class="font-code-xs text-code-xs flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-primary">verified</span>
+                  Checksum: d7a8f90...
+                </span>
+<span class="font-code-xs text-code-xs tabular-nums">Ingested: 23 Apr 2026, 14:18 IST</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2: Jan-26 (COLLAPSED View) -->
+<article class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm hover:shadow transition-all group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex flex-col gap-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest flex-shrink-0 group-hover:bg-primary transition-colors"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Jan-26</span>
+<span class="text-secondary/50 font-mono text-xs">·</span>
+<span class="font-body-md text-body-md text-on-surface">India</span>
+<span class="text-secondary/50 font-mono text-xs">·</span>
+<span class="font-body-md text-body-md text-on-surface tabular-nums">n=620</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  Ready
+                </span>
+</div>
+<!-- Summary Line -->
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[15px] text-primary">task_alt</span>
+<span class="font-body-sm text-body-sm">
+                  23 questions matched · Fieldwork: 04 Jan – 26 Jan 2026
+                </span>
+<span class="text-secondary/40">·</span>
+<span class="font-code-xs text-code-xs">campa_w7_jan26.sav (4.0 MB)</span>
+</div>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center gap-1 self-end md:self-center">
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Replace wave raw file" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+                Replace
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Download dataset" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                Download
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-error hover:bg-error-container/40 font-label-md text-label-md transition-colors" title="Remove wave" type="button">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+                Delete
+              </button>
+</div>
+</div>
+</article>
+<!-- Card 3: Oct-25 (COLLAPSED View) -->
+<article class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm hover:shadow transition-all group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex flex-col gap-1.5 min-w-0">
+<div class="flex flex-wrap items-center gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest flex-shrink-0 group-hover:bg-primary transition-colors"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Oct-25</span>
+<span class="text-secondary/50 font-mono text-xs">·</span>
+<span class="font-body-md text-body-md text-on-surface">India</span>
+<span class="text-secondary/50 font-mono text-xs">·</span>
+<span class="font-body-md text-body-md text-on-surface tabular-nums">n=600</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  Ready
+                </span>
+</div>
+<!-- Summary Line -->
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[15px] text-primary">task_alt</span>
+<span class="font-body-sm text-body-sm">
+                  23 questions matched · Fieldwork: 02 Oct – 24 Oct 2025
+                </span>
+<span class="text-secondary/40">·</span>
+<span class="font-code-xs text-code-xs">campa_w6_oct25.sav (3.8 MB)</span>
+</div>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center gap-1 self-end md:self-center">
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Replace wave raw file" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+                Replace
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" title="Download dataset" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                Download
+              </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-secondary hover:text-error hover:bg-error-container/40 font-label-md text-label-md transition-colors" title="Remove wave" type="button">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+                Delete
+              </button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Longitudinal Health Diagnostic Strip -->
+<div class="p-5 rounded-2xl bg-surface-container-high/60 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3.5">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Harmonization pipeline is intact</h3>
+<p class="font-body-sm text-body-sm text-secondary">
+            Cumulative sample size: <span class="font-semibold text-on-surface tabular-nums">1,860 completed interviews</span> across 3 synchronized waves. Ready for Cross-tabs.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-3 flex-shrink-0">
+<button class="px-3.5 py-2 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors shadow-sm cursor-pointer" type="button">
+          Verify weights
+        </button>
+<button class="px-3.5 py-2 rounded-xl bg-primary hover:bg-tertiary text-on-primary font-label-md text-label-md transition-all shadow-sm cursor-pointer" type="button">
+          Open in Cross-tabs
+        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+  // Dynamic active tab and breadcrumb sync matching route data-path
+  (function() {
+    const pathname = window.location.pathname.replace(/^\/+/g, '').replace(/\.html$/i, '') || 'cross-tabs';
+    const links = document.querySelectorAll('#sidebar-nav a[data-path]');
+    const nav = document.getElementById('sidebar-nav');
+    const activeClasses = (nav.getAttribute('data-active-classes') || 'bg-lightpurple text-primary font-semibold').split(' ');
+    const breadcrumb = document.getElementById('page-breadcrumb-title');
+
+    links.forEach(link => {
+      const path = link.getAttribute('data-path');
+      if (pathname.includes(path) || (pathname === '' && path === 'cross-tabs')) {
+        link.classList.remove('text-muted');
+        link.classList.add(...activeClasses);
+        if (breadcrumb) {
+          breadcrumb.textContent = link.textContent.trim();
+        }
+      }
+    });
+  })();
+</script>
+</body></html>

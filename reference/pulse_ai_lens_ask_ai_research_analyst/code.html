@@ -1,0 +1,838 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=1440, initial-scale=1.0" name="viewport">
+<title>Pulse AI Lens</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Inter+Tight:wght@500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          "tertiary-fixed": "#e6deff",
+          "surface-dim": "#d6dae5",
+          "inverse-surface": "#2b3139",
+          "secondary": "#5f5d6b",
+          "surface-bright": "#f8f9ff",
+          "on-error-container": "#93000a",
+          "on-surface-variant": "#494554",
+          "primary-fixed": "#e7deff",
+          "tertiary": "#4e2fb8",
+          "on-tertiary-fixed": "#1d0061",
+          "surface-container-high": "#e4e8f4",
+          "on-tertiary": "#ffffff",
+          "on-secondary-fixed": "#1c1a26",
+          "surface-tint": "#6641d1",
+          "inverse-on-surface": "#ecf1fc",
+          "outline": "#7a7485",
+          "on-secondary-container": "#656271",
+          "outline-variant": "#cac3d6",
+          "surface-container-low": "#eff3ff",
+          "on-tertiary-fixed-variant": "#4929b3",
+          "on-primary": "#ffffff",
+          "primary-container": "#6b47d6",
+          "surface-container": "#e9eef9",
+          "on-primary-fixed": "#1f005f",
+          "secondary-fixed": "#e5e0f2",
+          "on-tertiary-container": "#e4dbff",
+          "on-background": "#171c24",
+          "on-error": "#ffffff",
+          "on-primary-container": "#e5dbff",
+          "tertiary-container": "#664bd1",
+          "primary": "#6B47D6",
+          "surface-variant": "#dee2ee",
+          "secondary-container": "#e5e0f2",
+          "tertiary-fixed-dim": "#cabeff",
+          "on-secondary-fixed-variant": "#474553",
+          "on-primary-fixed-variant": "#4e22b8",
+          "error": "#ba1a1a",
+          "secondary-fixed-dim": "#c8c4d5",
+          "on-secondary": "#ffffff",
+          "surface": "#f8f9ff",
+          "on-surface": "#171c24",
+          "primary-fixed-dim": "#cdbdff",
+          "error-container": "#ffdad6",
+          "inverse-primary": "#cdbdff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-highest": "#dee2ee",
+          "background": "#F7F7F5",
+          "bordercol": "#E8E6EE",
+          "ink": "#1A1A1A",
+          "muted": "#717680",
+          "lightpurple": "#F1ECFE",
+          "success": "#15803D",
+          "warning": "#B45309"
+        },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px",
+          "card": "14px",
+          "btn": "10px"
+        },
+        spacing: {
+          "space-xs": "0.25rem",
+          "space-sm": "0.5rem",
+          "space-md": "0.75rem",
+          "space-lg": "1.25rem",
+          "space-xl": "1.75rem",
+          "gutter": "1.25rem",
+          "margin": "2rem"
+        },
+        fontFamily: {
+          "sans": ["Inter", "sans-serif"],
+          "heading": ["\"Inter Tight\"", "sans-serif"],
+          "mono": ["\"JetBrains Mono\"", "monospace"],
+          "metric-display": ["Inter"],
+          "headline-xl": ["Inter"],
+          "headline-lg": ["Inter"],
+          "headline-md": ["Inter"],
+          "headline-sm": ["Inter"],
+          "body-lg": ["Inter"],
+          "body-md": ["Inter"],
+          "body-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "label-sm": ["Inter"],
+          "code-sm": ["JetBrains Mono"],
+          "code-xs": ["JetBrains Mono"]
+        },
+        fontSize: {
+          "metric-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+          "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+          "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+          "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+          "headline-sm": ["15px", { "lineHeight": "22px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+          "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" }],
+          "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }],
+          "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+          "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+          "code-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+          "code-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0em", "fontWeight": "400" }]
+        }
+      }
+    }
+  };
+</script>
+<style>
+  @layer base {
+    html {
+      overscroll-behavior: none;
+    }
+    body {
+      background-color: #F7F7F5;
+      color: #1A1A1A;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
+    }
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+<meta content="web_dashboard" name="shell-type">
+</head>
+<body class="bg-background font-sans text-ink min-h-screen antialiased">
+<!-- Left Sidebar (240px fixed) -->
+<aside class="fixed top-0 bottom-0 left-0 w-[240px] bg-white border-r border-bordercol flex flex-col justify-between z-30">
+<div>
+<!-- App Header & Logo -->
+<div class="h-[52px] px-5 border-b border-bordercol flex items-center gap-3">
+<img alt="Pulse AI Lens Logo" class="w-7 h-7 rounded-md object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1WMru1g54tWiNGh1btfIfPDn1QlnjCKk_xc4WrE6ZtGbkIPrX7-3TZmuspoofQwXV61iCx_B0t3Ico5E95APWm5s0ksIVdYLbW0x4zYJI18RyDsn6q7RXAB1NaMOoydAEwodQRu2f3mG9lVbc8mCqpd7mKfshJbHPnL0zjTctS77f156hwSxl-inVBApZGj_yrheDXmbbmmNh78Z5eV1cOeOrIeovm2Omc0S4j_z2vLyzvKDfGBq0Y2Bw">
+<span class="font-heading font-bold text-base tracking-tight text-ink">Pulse AI Lens</span>
+</div>
+<!-- Project Switcher -->
+<div class="px-3 py-3 border-b border-bordercol">
+<div class="flex items-center justify-between px-2.5 py-2 rounded-btn bg-background border border-bordercol hover:border-outline-variant cursor-pointer transition-colors">
+<div class="flex items-center gap-2 overflow-hidden">
+<span class="w-2 h-2 rounded-full bg-success flex-shrink-0"></span>
+<span class="font-label-md text-label-md text-ink truncate">Campa Beverage Tracker</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-muted flex-shrink-0">expand_more</span>
+</div>
+</div>
+<!-- Navigation List (Text-only links with active data-path bindings) -->
+<nav class="p-3 space-y-1" data-active-classes="bg-lightpurple text-primary font-semibold font-label-md" id="sidebar-nav">
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="home" href="#">
+        Home
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="waves" href="#">
+        Waves
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="cross-tabs" href="#">
+        Cross-tabs
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="ask-ai" href="#">
+        Ask AI
+      </a>
+
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="weights" href="#">
+        Weights
+      </a>
+<a class="flex items-center px-3 py-2 rounded-btn font-label-md text-label-md text-muted hover:text-ink hover:bg-background transition-colors" data-path="storyboards" href="#">
+        Storyboards
+      </a>
+</nav>
+</div>
+<!-- User Profile Row -->
+<div class="p-3 border-t border-bordercol bg-white">
+<div class="flex items-center justify-between p-2 rounded-btn hover:bg-background transition-colors cursor-pointer">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-lightpurple text-primary font-semibold font-label-md text-label-md flex items-center justify-center border border-primary/20">
+          R
+        </div>
+<div class="flex flex-col text-left">
+<span class="font-label-md text-label-md font-semibold text-ink leading-tight">Researcher</span>
+<span class="font-label-sm text-label-sm text-muted">Insights Lead</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-muted">more_horiz</span>
+</div>
+</div>
+</aside>
+<!-- Header Top Bar (fixed 52px, offset 240px) -->
+<header class="fixed top-0 left-[240px] right-0 z-20 bg-white border-b border-bordercol">
+<div class="h-[52px] px-6 flex items-center justify-between">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 font-label-md text-label-md">
+<span class="text-muted font-normal">Campa Beverage Tracker</span>
+<span class="text-muted/50">/</span>
+<span class="text-ink font-semibold active-page-breadcrumb" id="page-breadcrumb-title">Workspace</span>
+</div>
+<!-- Right Scope Selector & Action -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-btn bg-background border border-bordercol font-label-md text-label-md">
+<span class="text-muted">Scope:</span>
+<span class="font-medium text-ink">Market: India</span>
+<span class="text-muted/40">·</span>
+<span class="font-medium text-ink">Waves: All (W1–W8)</span>
+<span class="material-symbols-outlined text-[15px] text-muted ml-0.5">expand_more</span>
+</div>
+<button class="w-8 h-8 rounded-btn border border-bordercol flex items-center justify-center text-muted hover:text-ink hover:bg-background transition-colors" title="Open in external view">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Analytical Canvas (pt matches header height h-[52px], pl matches sidebar w-[240px]) -->
+<main class="pl-[240px] pt-[52px] min-h-screen bg-background"><div class="flex flex-col w-full">
+<!-- Content Area Wrapper -->
+<div class="max-w-[1180px] w-full mx-auto px-8 py-7 flex flex-col gap-6">
+<!-- Header Section -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-3">
+<h1 class="font-heading font-bold text-headline-lg text-ink tracking-tight">Ask the Campa research</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-lightpurple text-primary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Survey reasoning engine
+        </span>
+</div>
+<p class="font-body-md text-body-md text-muted max-w-3xl">
+        Ask in plain language. Lens plans the analysis, computes every number from the data, and shows its working.
+      </p>
+</div>
+<!-- Active Analytical Context Bar -->
+<div class="flex items-center justify-between px-4 py-2.5 rounded-card bg-white border border-bordercol shadow-sm">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-label-md text-label-md text-muted uppercase tracking-wider font-semibold mr-1">Scope</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background border border-bordercol font-label-md text-label-md text-ink hover:border-outline-variant cursor-pointer transition-colors">
+<span class="">Market: India</span>
+<span class="material-symbols-outlined text-[13px] text-muted hover:text-ink">close</span>
+</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background border border-bordercol font-label-md text-label-md text-ink hover:border-outline-variant cursor-pointer transition-colors">
+<span class="">Waves: all 3</span>
+<span class="material-symbols-outlined text-[13px] text-muted hover:text-ink">close</span>
+</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background border border-bordercol font-label-md text-label-md text-ink hover:border-outline-variant cursor-pointer transition-colors">
+<span class="">Weighted</span>
+<span class="material-symbols-outlined text-[13px] text-muted hover:text-ink">close</span>
+</span>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-dashed border-bordercol hover:border-primary text-muted hover:text-primary font-label-md text-label-md transition-colors">
+<span class="material-symbols-outlined text-[14px]">add</span>
+<span class="">Add context</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-muted font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[15px]">sync_alt</span>
+<span class="">Applies to follow-up questions</span>
+</div>
+</div>
+<!-- Main Workspace Grid: Left Conversation (max 780px) + Right Inspector (300px) -->
+<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,780px)_300px] gap-6 items-start">
+<!-- LEFT / MAIN CONVERSATION COLUMN -->
+<div class="flex flex-col gap-6">
+<!-- User Prompt Bubble -->
+<div class="flex justify-end w-full">
+<div class="bg-[#F0EFF4] text-ink font-body-lg text-body-lg px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-xl shadow-sm border border-bordercol/60 leading-relaxed">
+            How has Campa awareness changed across waves, and who is driving it?
+          </div>
+</div>
+<!-- AI Analyst Response Card -->
+<div class="bg-white rounded-card border border-bordercol shadow-sm border-l-[4px] border-l-[#2F5BEA] flex flex-col p-6 gap-5">
+<!-- Card Header & Meta -->
+<div class="flex items-center justify-between pb-3 border-b border-bordercol/80">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-[#F3F6FF] text-[#2F5BEA] flex items-center justify-center border border-[#2F5BEA]/20">
+<span class="material-symbols-outlined text-[16px]">psychology</span>
+</div>
+<span class="font-heading font-bold text-headline-sm text-ink tracking-tight">Lens</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background font-mono text-code-xs text-muted border border-bordercol">
+<span class="material-symbols-outlined text-[12px] text-muted">terminal</span>
+                3 queries · 1.1s
+              </span>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1 rounded-btn hover:bg-background text-muted hover:text-ink transition-colors" title="Audit execution trace">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</button>
+<button class="p-1 rounded-btn hover:bg-background text-muted hover:text-ink transition-colors" title="More options">
+<span class="material-symbols-outlined text-[18px]">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Section (a): "Understood as" Assumption Chips -->
+<div class="flex flex-col gap-2 bg-background/60 p-3.5 rounded-btn border border-bordercol/70">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-muted tracking-wider">Semantic Parsing &amp; Variables</span>
+<span class="font-label-sm text-label-sm text-muted">Change any assumption to re-run.</span>
+</div>
+<div class="flex flex-wrap gap-1.5 items-center">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Measure:</span>
+<span class="font-mono text-code-xs text-primary font-medium">Q1 Brand awareness</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Brand:</span>
+<span class="font-medium">Campa</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Across:</span>
+<span class="font-medium">Wave</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Split by:</span>
+<span class="font-medium">Age group</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Base:</span>
+<span class="font-medium">all respondents</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-btn bg-white border border-bordercol hover:border-primary font-label-md text-label-md text-ink transition-colors shadow-2xs">
+<span class="text-muted">Test:</span>
+<span class="font-medium">vs prev wave · 95%</span>
+<span class="material-symbols-outlined text-[14px] text-muted">arrow_drop_down</span>
+</button>
+</div>
+</div>
+<!-- Section (b): "How Lens answered" Collapsible Panel -->
+<div class="rounded-btn bg-[#F3F6FF] border border-dashed border-[#2F5BEA]/60 p-3.5 flex flex-col gap-2.5">
+<div class="flex items-center justify-between cursor-pointer select-none" id="toggle-reasoning-btn">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-[#2F5BEA]">schema</span>
+<span class="font-heading font-semibold text-headline-sm text-[#2F5BEA]">Plan &amp; Execution Steps (3 queries)</span>
+</div>
+<div class="flex items-center gap-1 font-label-sm text-label-sm text-[#2F5BEA]">
+<span class="">Hide trace</span>
+<span class="material-symbols-outlined text-[16px] transition-transform" id="toggle-chevron">expand_less</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 pt-1 border-t border-[#2F5BEA]/20" id="reasoning-content">
+<div class="flex items-center justify-between py-1 px-2 rounded hover:bg-white/60 transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px] text-success font-semibold">check_circle</span>
+<span class="font-body-sm text-body-sm text-ink">1. Campa awareness by wave</span>
+</div>
+<span class="font-mono text-code-xs bg-white text-muted px-2 py-0.5 rounded border border-bordercol">R-1101</span>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded hover:bg-white/60 transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px] text-success font-semibold">check_circle</span>
+<span class="font-body-sm text-body-sm text-ink">2. Campa awareness by age group, Oct-25 vs Apr-26</span>
+</div>
+<span class="font-mono text-code-xs bg-white text-muted px-2 py-0.5 rounded border border-bordercol">R-1102</span>
+</div>
+<div class="flex items-center justify-between py-1 px-2 rounded hover:bg-white/60 transition-colors">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px] text-success font-semibold">check_circle</span>
+<span class="font-body-sm text-body-sm text-ink">3. Campa trial by wave, to check the funnel</span>
+</div>
+<span class="font-mono text-code-xs bg-white text-muted px-2 py-0.5 rounded border border-bordercol">R-1103</span>
+</div>
+</div>
+</div>
+<!-- Section (c): Headline Answer -->
+<div class="pt-1">
+<h2 class="font-heading font-semibold text-headline-md text-ink leading-snug">
+              Campa awareness rose significantly in both waves, from 58% to 77%, and the gain came from every age group.
+            </h2>
+</div>
+<!-- Section (d): Key Findings (Structured Rows) -->
+<div class="flex flex-col gap-2.5">
+<!-- Row 1 -->
+<div class="flex items-start justify-between p-3 rounded-btn bg-background/50 border border-bordercol hover:bg-background transition-colors gap-3">
+<div class="flex items-start gap-2.5">
+<div class="w-6 h-6 rounded bg-white flex items-center justify-center flex-shrink-0 text-success border border-bordercol mt-0.5">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+</div>
+<p class="font-body-md text-body-md text-ink leading-relaxed">
+                  Up 8 points to <span class="font-semibold tabular-nums">66%</span> in Jan-26, then 11 points to <span class="font-semibold tabular-nums">77%</span> in Apr-26, both significant at 95% confidence.
+                </p>
+</div>
+<span class="font-mono text-code-xs text-muted px-2 py-0.5 rounded bg-white border border-bordercol flex-shrink-0">R-1101</span>
+</div>
+<!-- Row 2 -->
+<div class="flex items-start justify-between p-3 rounded-btn bg-background/50 border border-bordercol hover:bg-background transition-colors gap-3">
+<div class="flex items-start gap-2.5">
+<div class="w-6 h-6 rounded bg-white flex items-center justify-center flex-shrink-0 text-primary border border-bordercol mt-0.5">
+<span class="material-symbols-outlined text-[16px]">group</span>
+</div>
+<p class="font-body-md text-body-md text-ink leading-relaxed">
+                  The biggest climb was among <span class="font-semibold">35–44s</span> (<span class="tabular-nums">50% → 73%</span>); <span class="font-semibold">18–24s</span> are now highest overall at <span class="font-semibold tabular-nums">80%</span>.
+                </p>
+</div>
+<span class="font-mono text-code-xs text-muted px-2 py-0.5 rounded bg-white border border-bordercol flex-shrink-0">R-1102</span>
+</div>
+<!-- Row 3 -->
+<div class="flex items-start justify-between p-3 rounded-btn bg-background/50 border border-bordercol hover:bg-background transition-colors gap-3">
+<div class="flex items-start gap-2.5">
+<div class="w-6 h-6 rounded bg-white flex items-center justify-center flex-shrink-0 text-ink border border-bordercol mt-0.5">
+<span class="material-symbols-outlined text-[16px]">filter_alt</span>
+</div>
+<p class="font-body-md text-body-md text-ink leading-relaxed">
+                  More aware people are trying Campa: awareness-to-trial conversion rose from <span class="font-semibold tabular-nums">45%</span> to <span class="font-semibold tabular-nums">61%</span>.
+                </p>
+</div>
+<span class="font-mono text-code-xs text-muted px-2 py-0.5 rounded bg-white border border-bordercol flex-shrink-0">R-1103</span>
+</div>
+</div>
+<!-- Section (e): Evidence Block with Segmented Tabs -->
+<div class="flex flex-col rounded-card border border-bordercol overflow-hidden bg-white">
+<!-- Segmented Control Bar -->
+<div class="flex items-center justify-between px-4 py-2.5 bg-background border-b border-bordercol">
+<div class="flex items-center gap-1 bg-white p-0.5 rounded-btn border border-bordercol" id="evidence-tabs">
+<button class="px-3 py-1 rounded-btn font-label-md text-label-md bg-lightpurple text-primary font-semibold transition-all" data-tab="chart">Chart</button>
+<button class="px-3 py-1 rounded-btn font-label-md text-label-md text-muted hover:text-ink transition-all" data-tab="table">Table</button>
+<button class="px-3 py-1 rounded-btn font-label-md text-label-md text-muted hover:text-ink transition-all" data-tab="byage">By age</button>
+</div>
+<div class="flex items-center gap-2 font-mono text-code-xs text-muted">
+<span class="">Metric: Total Awareness (Q1)</span>
+</div>
+</div>
+<!-- Chart Body -->
+<div class="p-6 flex flex-col gap-4" id="evidence-view-chart">
+<!-- Clean SVG Line Chart with Reference Lines -->
+<div class="w-full h-56 relative flex items-center justify-center select-none">
+<svg aria-label="Campa awareness trend line chart" class="w-full h-full overflow-visible" viewBox="0 0 680 200">
+<!-- Gridlines & Y-Axis Scale (0 to 100%) -->
+<!-- 100% at Y=20 -->
+<line stroke="#E8E6EE" stroke-dasharray="3 3" stroke-width="1" x1="45" x2="650" y1="20" y2="20"></line>
+<text class="text-[11px] font-mono" fill="#717680" text-anchor="end" x="35" y="24">100%</text>
+<!-- 75% at Y=60 -->
+<line stroke="#E8E6EE" stroke-dasharray="3 3" stroke-width="1" x1="45" x2="650" y1="60" y2="60"></line>
+<text class="text-[11px] font-mono" fill="#717680" text-anchor="end" x="35" y="64">75%</text>
+<!-- 50% at Y=100 -->
+<line stroke="#E8E6EE" stroke-dasharray="3 3" stroke-width="1" x1="45" x2="650" y1="100" y2="100"></line>
+<text class="text-[11px] font-mono" fill="#717680" text-anchor="end" x="35" y="104">50%</text>
+<!-- 25% at Y=140 -->
+<line stroke="#E8E6EE" stroke-dasharray="3 3" stroke-width="1" x1="45" x2="650" y1="140" y2="140"></line>
+<text class="text-[11px] font-mono" fill="#717680" text-anchor="end" x="35" y="144">25%</text>
+<!-- 0% at Y=180 -->
+<line stroke="#E8E6EE" stroke-width="1" x1="45" x2="650" y1="180" y2="180"></line>
+<text class="text-[11px] font-mono" fill="#717680" text-anchor="end" x="35" y="184">0%</text>
+<!-- Data Points:
+                       X1 = 150 (Oct-25), Value: 58% -> Y = 180 - (58 * 1.6) = 87.2
+                       X2 = 350 (Jan-26), Value: 66% -> Y = 180 - (66 * 1.6) = 74.4
+                       X3 = 550 (Apr-26), Value: 77% -> Y = 180 - (77 * 1.6) = 56.8
+                  -->
+<!-- Connective Trend Line (Purple #6B47D6, 3px stroke, solid, no fill) -->
+<path d="M 150 87.2 L 350 74.4 L 550 56.8" fill="none" stroke="#6B47D6" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<!-- Data Point 1: Oct-25 (58%) -->
+<circle cx="150" cy="87.2" fill="#6B47D6" r="5" stroke="#FFFFFF" stroke-width="2"></circle>
+<text class="text-[13px] font-semibold font-mono" fill="#1A1A1A" text-anchor="middle" x="150" y="70">58%</text>
+<text class="text-[12px] font-medium font-sans" fill="#717680" text-anchor="middle" x="150" y="196">Oct-25</text>
+<!-- Data Point 2: Jan-26 (66%) + Significant Up Marker -->
+<circle cx="350" cy="74.4" fill="#6B47D6" r="5" stroke="#FFFFFF" stroke-width="2"></circle>
+<!-- Green Triangle indicator -->
+<path d="M 350 46 L 345 54 L 355 54 Z" fill="#15803D"></path>
+<text class="text-[10px] font-mono font-bold" fill="#15803D" text-anchor="middle" x="350" y="42">+8pp</text>
+<text class="text-[13px] font-semibold font-mono" fill="#1A1A1A" text-anchor="middle" x="350" y="66">66%</text>
+<text class="text-[12px] font-medium font-sans" fill="#717680" text-anchor="middle" x="350" y="196">Jan-26</text>
+<!-- Data Point 3: Apr-26 (77%) + Significant Up Marker -->
+<circle cx="550" cy="56.8" fill="#6B47D6" r="5" stroke="#FFFFFF" stroke-width="2"></circle>
+<!-- Green Triangle indicator -->
+<path d="M 550 28 L 545 36 L 555 36 Z" fill="#15803D"></path>
+<text class="text-[10px] font-mono font-bold" fill="#15803D" text-anchor="middle" x="550" y="24">+11pp</text>
+<text class="text-[13px] font-semibold font-mono" fill="#1A1A1A" text-anchor="middle" x="550" y="48">77%</text>
+<text class="text-[12px] font-medium font-sans" fill="#717680" text-anchor="middle" x="550" y="196">Apr-26</text>
+</svg>
+</div>
+<!-- Footnote inside block -->
+<div class="flex items-center justify-between pt-2 border-t border-bordercol/60 text-muted font-mono text-code-xs">
+<span class="">Q1 · Campa · weighted · bases 600 / 620 / 640</span>
+<span class="">▲ = sig. increase vs. prior wave (p &lt; 0.05)</span>
+</div>
+</div>
+<!-- Alternative Table View (Hidden by default) -->
+<div class="hidden p-4" id="evidence-view-table">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-background text-muted font-label-sm text-label-sm uppercase">
+<th class="py-2 px-3">Wave</th>
+<th class="py-2 px-3">Unweighted (n)</th>
+<th class="py-2 px-3 text-right">Awareness (%)</th>
+<th class="py-2 px-3 text-right">Wave-over-Wave</th>
+<th class="py-2 px-3 text-right">p-value</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-bordercol tabular-nums">
+<tr class="hover:bg-background/40">
+<td class="py-2.5 px-3 font-medium">Wave 1 (Oct-25)</td>
+<td class="py-2.5 px-3 font-mono text-code-xs text-muted">600</td>
+<td class="py-2.5 px-3 text-right font-semibold">58.0%</td>
+<td class="py-2.5 px-3 text-right text-muted">—</td>
+<td class="py-2.5 px-3 text-right text-muted">—</td>
+</tr>
+<tr class="hover:bg-background/40">
+<td class="py-2.5 px-3 font-medium">Wave 2 (Jan-26)</td>
+<td class="py-2.5 px-3 font-mono text-code-xs text-muted">620</td>
+<td class="py-2.5 px-3 text-right font-semibold">66.2%</td>
+<td class="py-2.5 px-3 text-right text-success font-medium">+8.2pp</td>
+<td class="py-2.5 px-3 text-right font-mono text-code-xs text-success">p = 0.003</td>
+</tr>
+<tr class="hover:bg-background/40">
+<td class="py-2.5 px-3 font-medium">Wave 3 (Apr-26)</td>
+<td class="py-2.5 px-3 font-mono text-code-xs text-muted">640</td>
+<td class="py-2.5 px-3 text-right font-semibold">77.3%</td>
+<td class="py-2.5 px-3 text-right text-success font-medium">+11.1pp</td>
+<td class="py-2.5 px-3 text-right font-mono text-code-xs text-success">p &lt; 0.001</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Alternative By Age View (Hidden by default) -->
+<div class="hidden p-4" id="evidence-view-byage">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-background text-muted font-label-sm text-label-sm uppercase">
+<th class="py-2 px-3">Age Cohort</th>
+<th class="py-2 px-3">Oct-25</th>
+<th class="py-2 px-3">Jan-26</th>
+<th class="py-2 px-3">Apr-26</th>
+<th class="py-2 px-3 text-right">Net Shift</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-bordercol tabular-nums">
+<tr class="hover:bg-background/40">
+<td class="py-2 px-3 font-medium">18–24</td>
+<td class="py-2 px-3 font-mono text-code-xs">68.4%</td>
+<td class="py-2 px-3 font-mono text-code-xs">74.1%</td>
+<td class="py-2 px-3 font-mono text-code-xs font-semibold text-primary">80.2%</td>
+<td class="py-2 px-3 text-right text-success font-medium">+11.8pp</td>
+</tr>
+<tr class="hover:bg-background/40">
+<td class="py-2 px-3 font-medium">25–34</td>
+<td class="py-2 px-3 font-mono text-code-xs">61.0%</td>
+<td class="py-2 px-3 font-mono text-code-xs">69.5%</td>
+<td class="py-2 px-3 font-mono text-code-xs font-semibold">78.0%</td>
+<td class="py-2 px-3 text-right text-success font-medium">+17.0pp</td>
+</tr>
+<tr class="hover:bg-background/40">
+<td class="py-2 px-3 font-medium">35–44 (Fastest gain)</td>
+<td class="py-2 px-3 font-mono text-code-xs">50.2%</td>
+<td class="py-2 px-3 font-mono text-code-xs">62.0%</td>
+<td class="py-2 px-3 font-mono text-code-xs font-semibold">73.1%</td>
+<td class="py-2 px-3 text-right text-success font-bold">+22.9pp</td>
+</tr>
+<tr class="hover:bg-background/40">
+<td class="py-2 px-3 font-medium">45+ (Low base n=91)</td>
+<td class="py-2 px-3 font-mono text-code-xs">48.1%</td>
+<td class="py-2 px-3 font-mono text-code-xs">53.4%</td>
+<td class="py-2 px-3 font-mono text-code-xs font-semibold">61.5%</td>
+<td class="py-2 px-3 text-right text-muted font-medium">+13.4pp*</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Section (f): Caveats Box -->
+<div class="rounded-btn bg-[#FEF4E6] border border-[#FCD399] p-3.5 flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-warning font-heading font-semibold text-label-md">
+<span class="material-symbols-outlined text-[17px]">warning</span>
+<span class="">Sample caveats &amp; statistical notes</span>
+</div>
+<ul class="list-disc list-inside text-ink/80 font-body-sm text-body-sm pl-1 space-y-0.5">
+<li class=""><span class="font-mono text-code-xs">45+</span> base in Apr-26 is 91 respondents; read age-group detail with care.</li>
+<li class="">Age-group changes are shown but were not individually significance-tested across all cohorts.</li>
+</ul>
+</div>
+<!-- Section (g): Verification Line -->
+<div class="flex items-center gap-2 text-success font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[17px]">verified</span>
+<span class="">All 9 numbers in this answer match the computed results.</span>
+</div>
+<!-- Section (h): Action Row -->
+<div class="flex items-center justify-between pt-3 border-t border-bordercol/80">
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-1.5 rounded-btn border border-bordercol bg-white hover:bg-background font-label-md text-label-md text-ink font-medium transition-colors shadow-2xs inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-muted">table_chart</span>
+<span class="">Open in Cross-tabs</span>
+</button>
+<button class="px-3.5 py-1.5 rounded-btn bg-primary hover:bg-tertiary text-white font-label-md text-label-md font-semibold transition-colors shadow-sm inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">bookmark_add</span>
+<span class="">Save to storyboard</span>
+</button>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-btn hover:bg-background border border-transparent hover:border-bordercol flex items-center justify-center text-muted hover:text-ink transition-colors" title="Copy response markdown">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+<button class="w-8 h-8 rounded-btn hover:bg-background border border-transparent hover:border-bordercol flex items-center justify-center text-muted hover:text-ink transition-colors" title="Export as PDF slide">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+</button>
+</div>
+</div>
+<!-- Section (i): Suggested Next Questions -->
+<div class="flex flex-col gap-2 pt-2 border-t border-bordercol/60">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-muted tracking-wider">Suggested follow-ups:</span>
+<div class="flex flex-wrap gap-2">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-bordercol hover:border-primary hover:text-primary font-body-sm text-body-sm text-ink transition-colors text-left shadow-2xs group">
+<span class="material-symbols-outlined text-[14px] text-muted group-hover:text-primary">arrow_forward</span>
+<span class="">Is the 35–44 gain significant?</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-bordercol hover:border-primary hover:text-primary font-body-sm text-body-sm text-ink transition-colors text-left shadow-2xs group">
+<span class="material-symbols-outlined text-[14px] text-muted group-hover:text-primary">arrow_forward</span>
+<span class="">Show the full funnel: awareness → trial → main brand</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-bordercol hover:border-primary hover:text-primary font-body-sm text-body-sm text-ink transition-colors text-left shadow-2xs group">
+<span class="material-symbols-outlined text-[14px] text-muted group-hover:text-primary">arrow_forward</span>
+<span class="">Compare Campa with Thums Up</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-bordercol hover:border-primary hover:text-primary font-body-sm text-body-sm text-ink transition-colors text-left shadow-2xs group">
+<span class="material-symbols-outlined text-[14px] text-muted group-hover:text-primary">arrow_forward</span>
+<span class="">Break this down by city type</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Composer / Input Bar (Pinned style) -->
+<div class="flex flex-col gap-2 pt-2 pb-6">
+<div class="bg-white rounded-card border border-bordercol shadow-md p-2 flex items-center gap-2 focus-within:border-primary transition-colors">
+<!-- Segmented Mode Control -->
+<div class="flex items-center bg-background p-0.5 rounded-btn border border-bordercol/80 flex-shrink-0">
+<button class="px-2.5 py-1 rounded-btn font-label-md text-label-md bg-white text-ink font-semibold shadow-2xs">Answer</button>
+<button class="px-2.5 py-1 rounded-btn font-label-md text-label-md text-muted hover:text-ink">Explore</button>
+</div>
+<!-- Input Box -->
+<div class="flex-1 relative flex items-center">
+<input class="w-full bg-transparent px-3 py-1.5 text-body-md font-body-md text-ink placeholder-muted focus:outline-none" placeholder="Ask a question, or type @ to reference a question (e.g. @Q2 Brand trial)" type="text">
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-1 flex-shrink-0 pr-1">
+<button class="p-1.5 rounded-btn hover:bg-background text-muted hover:text-ink transition-colors" title="Attach filter or variable">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+<button class="w-9 h-9 rounded-btn bg-primary hover:bg-tertiary text-white flex items-center justify-center transition-colors shadow-sm" title="Send analytical question">
+<span class="material-symbols-outlined text-[18px]">send</span>
+</button>
+</div>
+</div>
+<!-- Strict Privacy / Computational Note -->
+<div class="flex items-center gap-1.5 text-muted font-body-sm text-body-sm justify-center">
+<span class="material-symbols-outlined text-[15px] text-muted">lock</span>
+<span class="">Only question names and labels are sent to the AI. Every number is calculated directly from raw survey records.</span>
+</div>
+</div>
+</div>
+<!-- RIGHT CONTEXT PANEL (300px stacked cards) -->
+<div class="flex flex-col gap-5 w-full">
+<!-- Card 1: What Stands Out -->
+<div class="bg-white rounded-card border border-bordercol shadow-sm p-4 flex flex-col gap-3">
+<div class="flex flex-col">
+<div class="flex items-center justify-between">
+<h3 class="font-heading font-semibold text-headline-sm text-ink">What stands out</h3>
+<span class="material-symbols-outlined text-[16px] text-muted">auto_awesome</span>
+</div>
+<span class="font-label-sm text-label-sm text-muted">Scanned across all questions, latest wave</span>
+</div>
+<div class="flex flex-col gap-3 pt-1">
+<!-- Insight 1 -->
+<div class="flex flex-col gap-1 pb-2.5 border-b border-bordercol/60">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[14px] text-success mt-0.5 flex-shrink-0">change_history</span>
+<p class="font-body-sm text-body-sm text-ink leading-snug">
+                  Campa awareness up significantly in both waves (<span class="tabular-nums font-medium">58% → 77%</span>).
+                </p>
+</div>
+<div class="flex justify-end">
+<span class="font-mono text-code-xs text-muted">R-1101</span>
+</div>
+</div>
+<!-- Insight 2 -->
+<div class="flex flex-col gap-1 pb-2.5 border-b border-bordercol/60">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[14px] text-error mt-0.5 flex-shrink-0" style="transform: rotate(180deg);">change_history</span>
+<p class="font-body-sm text-body-sm text-ink leading-snug">
+                  Pepsi awareness dipped in Jan-26 (<span class="tabular-nums font-medium">92% → 88%</span>), then recovered to <span class="tabular-nums font-medium">91%</span>.
+                </p>
+</div>
+<div class="flex justify-end">
+<span class="font-mono text-code-xs text-muted">R-1104</span>
+</div>
+</div>
+<!-- Insight 3 -->
+<div class="flex flex-col gap-1">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[14px] text-success mt-0.5 flex-shrink-0">change_history</span>
+<p class="font-body-sm text-body-sm text-ink leading-snug">
+                  Campa trial nearly doubled, <span class="tabular-nums font-medium">26% → 47%</span> across survey waves.
+                </p>
+</div>
+<div class="flex justify-end">
+<span class="font-mono text-code-xs text-muted">R-1103</span>
+</div>
+</div>
+</div>
+<div class="pt-2 border-t border-bordercol/60">
+<button class="font-label-md text-label-md text-primary hover:text-tertiary font-semibold inline-flex items-center gap-1 group transition-colors">
+<span class="">Ask about these</span>
+<span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Research Basis -->
+<div class="bg-white rounded-card border border-bordercol shadow-sm p-4 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h3 class="font-heading font-semibold text-headline-sm text-ink">Research basis</h3>
+<span class="material-symbols-outlined text-[16px] text-muted">dataset</span>
+</div>
+<div class="flex flex-col gap-2 pt-1 font-body-sm text-body-sm divide-y divide-bordercol/60">
+<div class="flex items-center justify-between py-1">
+<span class="text-muted">Market</span>
+<span class="font-medium text-ink">India</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-muted">Waves</span>
+<span class="font-medium text-ink">Oct-25, Jan-26, Apr-26</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-muted">Respondents</span>
+<span class="font-mono text-code-xs font-semibold text-ink">1,860</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-muted">Weighting</span>
+<span class="font-mono text-code-xs text-ink bg-background px-1.5 py-0.5 rounded border border-bordercol">wt (age × gender)</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Recent Questions -->
+<div class="bg-white rounded-card border border-bordercol shadow-sm p-4 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<h3 class="font-heading font-semibold text-headline-sm text-ink">Recent questions</h3>
+<span class="material-symbols-outlined text-[16px] text-muted">history</span>
+</div>
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-center gap-2.5 p-2 rounded-btn hover:bg-background cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-[16px] text-muted group-hover:text-primary transition-colors">schedule</span>
+<span class="font-body-sm text-body-sm text-ink group-hover:text-primary transition-colors truncate">Campa trial vs Thums Up</span>
+</div>
+<div class="flex items-center gap-2.5 p-2 rounded-btn hover:bg-background cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-[16px] text-muted group-hover:text-primary transition-colors">schedule</span>
+<span class="font-body-sm text-body-sm text-ink group-hover:text-primary transition-colors truncate">Main-brand share by age</span>
+</div>
+<div class="flex items-center gap-2.5 p-2 rounded-btn hover:bg-background cursor-pointer transition-colors group">
+<span class="material-symbols-outlined text-[16px] text-muted group-hover:text-primary transition-colors">schedule</span>
+<span class="font-body-sm text-body-sm text-ink group-hover:text-primary transition-colors truncate">Recommendation score for Campa</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interactions for tab switching and collapsible reasoning panel
+  (function() {
+    // 1. Evidence tab switcher
+    const tabButtons = document.querySelectorAll('#evidence-tabs button');
+    const views = {
+      chart: document.getElementById('evidence-view-chart'),
+      table: document.getElementById('evidence-view-table'),
+      byage: document.getElementById('evidence-view-byage')
+    };
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-tab');
+        tabButtons.forEach(b => {
+          b.classList.remove('bg-lightpurple', 'text-primary', 'font-semibold');
+          b.classList.add('text-muted');
+        });
+        btn.classList.remove('text-muted');
+        btn.classList.add('bg-lightpurple', 'text-primary', 'font-semibold');
+
+        // Toggle Views
+        Object.keys(views).forEach(key => {
+          if (views[key]) {
+            if (key === target) {
+              views[key].classList.remove('hidden');
+            } else {
+              views[key].classList.add('hidden');
+            }
+          }
+        });
+      });
+    });
+
+    // 2. Toggle reasoning panel
+    const toggleBtn = document.getElementById('toggle-reasoning-btn');
+    const content = document.getElementById('reasoning-content');
+    const chevron = document.getElementById('toggle-chevron');
+
+    if (toggleBtn && content && chevron) {
+      toggleBtn.addEventListener('click', () => {
+        const isHidden = content.classList.contains('hidden');
+        if (isHidden) {
+          content.classList.remove('hidden');
+          chevron.textContent = 'expand_less';
+        } else {
+          content.classList.add('hidden');
+          chevron.textContent = 'expand_more';
+        }
+      });
+    }
+  })();
+</script></main>
+<script>
+  // Dynamic active tab and breadcrumb sync matching route data-path
+  (function() {
+    const pathname = window.location.pathname.replace(/^\/+/g, '').replace(/\.html$/i, '') || 'cross-tabs';
+    const links = document.querySelectorAll('#sidebar-nav a[data-path]');
+    const nav = document.getElementById('sidebar-nav');
+    const activeClasses = (nav.getAttribute('data-active-classes') || 'bg-lightpurple text-primary font-semibold').split(' ');
+    const breadcrumb = document.getElementById('page-breadcrumb-title');
+
+    links.forEach(link => {
+      const path = link.getAttribute('data-path');
+      if (pathname.includes(path) || (pathname === '' && path === 'cross-tabs')) {
+        link.classList.remove('text-muted');
+        link.classList.add(...activeClasses);
+        if (breadcrumb) {
+          breadcrumb.textContent = link.textContent.trim();
+        }
+      }
+    });
+  })();
+</script>
+
+
+</body></html>
