@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from '@/components/shell/AppShell'
 import Home from '@/pages/Home'
 import Waves from '@/pages/Waves'
@@ -9,7 +9,7 @@ import Storyboards from '@/pages/Storyboards'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/home" element={<Home />} />
@@ -22,6 +22,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }

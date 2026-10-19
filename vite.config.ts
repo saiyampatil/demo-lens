@@ -5,6 +5,8 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages serves the app from https://saiyampatil.github.io/demo-lens/
+  base: '/demo-lens/',
   plugins: [
     react(),
     tailwindcss(),
