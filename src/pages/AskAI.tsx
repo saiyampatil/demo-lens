@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, Respons
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { significantChanges, funnel, latestWave, previousWave } from '@/engine/insights'
-import { BRANDS, WAVES } from '@/engine/questions'
+import { BRANDS, QUESTIONS, WAVES } from '@/engine/questions'
 import PageHeader from '@/components/PageHeader'
 
 type CtArgs = Parameters<typeof crosstab>[0]
@@ -33,7 +33,7 @@ type Answer = {
   view: View
   followUps: string[]
 }
-type Turn = { id: number; question: string; answer: Answer | null }
+type Turn = { id: number; question: string; answer: Answer | null; chartType: 'line' | 'bar' }
 
 const PURPLE = '#6B47D6'
 const GREY = '#C9C6D3'
@@ -379,9 +379,15 @@ const card = 'rounded-[14px] border border-border bg-card'
 const chipBtn =
   'rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40'
 
-function AnswerCard({ a, onAsk, onOpen }: { a: Answer; onAsk: (q: string) => void; onOpen: (v: View) => void }) {
+const COLUMN_LABEL: Record<string, string> = {
+  WAVE: 'Wave', TOTAL: 'Total', AGE: 'Age group', GENDER: 'Gender', CITY: 'City type', SEC: 'Socio-economic class',
+}
+const qLabel = (id: string) => QUESTIONS[id as keyof typeof QUESTIONS]?.label ?? id
+const colLabel = (id: string) => COLUMN_LABEL[id] ?? qLabel(id)
+
+function AnswerCard({ a, onAsk, onOpen, onSave }: { a: Answer; onAsk: (q: string) => void; onOpen: (v: View) => void; onSave: () => void }) {
   const [tab, setTab] = useState<'chart' | 'table'>('chart')
-  const [showSteps, setShowSteps] = useState(true)
+  const [showSteps, setShowSteps] = useState(false)
   return (
     <div className={`${card} border-l-[3px] p-5`} style={{ borderLeftColor: AI_BLUE }}>
       <div className="flex items-center gap-2 text-xs">
@@ -389,30 +395,26 @@ function AnswerCard({ a, onAsk, onOpen }: { a: Answer; onAsk: (q: string) => voi
         <span className="text-muted-foreground">{a.steps.length} queries · computed from the survey data</span>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted-foreground">Understood as</span>
-        {a.understood.map((u) => (
-          <span key={u} className="rounded-md border border-border bg-background px-2 py-0.5 text-xs text-foreground">{u}</span>
-        ))}
-      </div>
+      <p className="mt-3 text-base font-semibold leading-snug text-foreground">{a.headline}</p>
 
       <div className="mt-3 rounded-[10px] border border-dashed p-3" style={{ borderColor: AI_BLUE, backgroundColor: '#F3F6FF' }}>
         <button type="button" onClick={() => setShowSteps((v) => !v)} className="text-xs font-medium" style={{ color: AI_BLUE }}>
           How Lens answered {showSteps ? '▾' : '▸'}
         </button>
         {showSteps && (
-          <ol className="mt-2 space-y-1">
-            {a.steps.map((s, i) => (
-              <li key={i} className="flex items-center justify-between gap-3 text-xs text-foreground">
-                <span><span className="text-sig-high">✓</span> {i + 1}. {s.text}</span>
-                <span className="font-mono text-muted-foreground">{s.ref}</span>
-              </li>
-            ))}
-          </ol>
+          <>
+            <p className="mt-2 text-xs text-muted-foreground">Understood as: {a.understood.join(' · ')}</p>
+            <ol className="mt-2 space-y-1">
+              {a.steps.map((s, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 text-xs text-foreground">
+                  <span><span className="text-sig-high">✓</span> {i + 1}. {s.text}</span>
+                  <span className="font-mono text-muted-foreground">{s.ref}</span>
+                </li>
+              ))}
+            </ol>
+          </>
         )}
       </div>
-
-      <p className="mt-4 text-base font-semibold leading-snug text-foreground">{a.headline}</p>
 
       <ul className="mt-3 space-y-2">
         {a.findings.map((f, i) => (
@@ -479,7 +481,12 @@ function AnswerCard({ a, onAsk, onOpen }: { a: Answer; onAsk: (q: string) => voi
           className="h-9 rounded-[10px] border border-border px-3 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40">
           Open in Cross-tabs
         </button>
+        <button type="button" onClick={onSave}
+          className="h-9 rounded-[10px] bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/40">
+          Save to storyboard
+        </button>
       </div>
+      <p className="mt-2 text-xs text-muted-foreground">Saves the underlying table, which stays live as data updates.</p>
 
       <div className="mt-4">
         <p className="mb-2 text-xs text-muted-foreground">Suggested next questions</p>
@@ -497,17 +504,29 @@ export default function AskAI() {
   const navigate = useNavigate()
   const location = useLocation()
   const openCrossTab = useLensStore((s) => s.openCrossTab)
-  const [turns, setTurns] = useState<Turn[]>([])
+  const askHistory = useLensStore((s) => s.askHistory)
+  const addAskQuestion = useLensStore((s) => s.addAskQuestion)
+  const clearAskHistory = useLensStore((s) => s.clearAskHistory)
   const [input, setInput] = useState('')
+  const [toast, setToast] = useState('')
   const started = useRef(false)
   const endRef = useRef<HTMLDivElement>(null)
 
   const stands = useMemo(() => significantChanges(latestWave, previousWave), [])
 
+  const turns: Turn[] = useMemo(
+    () =>
+      askHistory.map((h) => {
+        const answer = answerFor(h.question)
+        return { id: h.id, question: h.question, answer, chartType: answer?.chart.type ?? 'bar' }
+      }),
+    [askHistory],
+  )
+
   const ask = (q: string) => {
     const text = q.trim()
     if (!text) return
-    setTurns((t) => [...t, { id: Date.now() + Math.random(), question: text, answer: answerFor(text) }])
+    addAskQuestion(text)
     setInput('')
   }
 
@@ -515,7 +534,10 @@ export default function AskAI() {
     if (started.current) return
     started.current = true
     const st = location.state as { question?: unknown } | null
-    if (st && typeof st.question === 'string') ask(st.question)
+    if (st && typeof st.question === 'string') {
+      addAskQuestion(st.question.trim())
+      navigate('/ask', { replace: true, state: null })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -524,6 +546,27 @@ export default function AskAI() {
   }, [turns])
 
   const onOpen = (v: View) => openCrossTab(v, navigate)
+
+  const toastTimer = useRef<number | null>(null)
+  const saveAnswer = (t: Turn) => {
+    if (!t.answer) return
+    const view = t.answer.view
+    const title = `${qLabel(view.row)} by ${colLabel(view.column)}`
+    const item = {
+      id: `${Date.now()}`,
+      title,
+      crossTab: { row: view.row, column: view.column, filters: view.filters, stat: 'colpct', decimals: 0 },
+      waveScope: 'All',
+      weighted: true,
+      view: 'both',
+      chartType: t.answer.chart.type === 'line' ? 'line' : 'column',
+      savedAt: new Date().toISOString(),
+    }
+    useLensStore.setState((s) => ({ savedResults: [...s.savedResults, item] }))
+    setToast(title)
+    if (toastTimer.current) window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(''), 4000)
+  }
 
   return (
     <div className="flex h-full w-full overflow-hidden">
@@ -539,6 +582,12 @@ export default function AskAI() {
               <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Waves: all {WAVES.length}</span>
               <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Weighted</span>
               <span className="text-muted-foreground">Applies to every answer</span>
+              {turns.length > 0 && (
+                <button type="button" onClick={clearAskHistory}
+                  className="ml-auto text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+                  Clear conversation
+                </button>
+              )}
             </div>
 
             <div className="mt-5 space-y-5">
@@ -557,10 +606,10 @@ export default function AskAI() {
             {turns.map((t) => (
               <div key={t.id} className="space-y-3">
                 <div className="flex justify-end">
-                  <div className="max-w-[80%] rounded-[14px] bg-muted px-4 py-2.5 text-sm text-foreground">{t.question}</div>
+                  <div className="max-w-[80%] rounded-[14px] border border-border bg-card px-4 py-2.5 text-sm text-foreground">{t.question}</div>
                 </div>
                 {t.answer ? (
-                  <AnswerCard a={t.answer} onAsk={ask} onOpen={onOpen} />
+                  <AnswerCard a={t.answer} onAsk={ask} onOpen={onOpen} onSave={() => saveAnswer(t)} />
                 ) : (
                   <div className={`${card} border-l-[3px] p-5`} style={{ borderLeftColor: AI_BLUE }}>
                     <p className="text-sm text-foreground">
@@ -637,10 +686,10 @@ export default function AskAI() {
           <div className={`${card} mt-4 p-4`}>
             <h2 className="text-sm font-semibold text-foreground">Recent questions</h2>
             <ul className="mt-2 space-y-1">
-              {turns.slice(-5).reverse().map((t) => (
-                <li key={t.id}>
-                  <button type="button" onClick={() => ask(t.question)} className="w-full rounded-[8px] px-2 py-1 text-left text-xs text-foreground hover:bg-muted">
-                    {t.question}
+              {askHistory.slice(-5).reverse().map((h) => (
+                <li key={h.id}>
+                  <button type="button" onClick={() => ask(h.question)} className="w-full rounded-[8px] px-2 py-1 text-left text-xs text-foreground hover:bg-muted">
+                    {h.question}
                   </button>
                 </li>
               ))}
@@ -648,6 +697,19 @@ export default function AskAI() {
           </div>
         )}
       </aside>
+
+      {toast && (
+        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-[10px] bg-foreground px-4 py-2.5 text-sm text-background shadow-lg">
+          <span className="truncate">Saved &lsquo;{toast}&rsquo; to storyboard</span>
+          <button
+            type="button"
+            onClick={() => { setToast(''); navigate('/storyboards') }}
+            className="shrink-0 font-medium underline underline-offset-2 hover:opacity-80"
+          >
+            View storyboard
+          </button>
+        </div>
+      )}
     </div>
   )
 }

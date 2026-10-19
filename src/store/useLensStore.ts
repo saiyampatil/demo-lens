@@ -17,11 +17,14 @@ export interface LensState {
   weighted: boolean
   savedResults: unknown[]
   crossTab: CrossTabConfig
+  askHistory: { id: number; question: string }[]
   setWaveScope: (scope: WaveScope) => void
   setWeighted: (weighted: boolean) => void
   addSavedResult: (result: unknown) => void
   setCrossTab: (partial: Partial<CrossTabConfig>) => void
   openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => void
+  addAskQuestion: (question: string) => void
+  clearAskHistory: () => void
 }
 
 export const useLensStore = create<LensState>()(
@@ -37,9 +40,13 @@ export const useLensStore = create<LensState>()(
         stat: 'colpct',
         decimals: 0,
       },
+      askHistory: [],
       setWaveScope: (scope: WaveScope) => set({ waveScope: scope }),
       setWeighted: (weighted: boolean) => set({ weighted }),
       addSavedResult: (result: unknown) => set((state) => ({ savedResults: [...state.savedResults, result] })),
+      addAskQuestion: (question: string) =>
+        set((state) => ({ askHistory: [...state.askHistory, { id: Date.now(), question }].slice(-30) })),
+      clearAskHistory: () => set({ askHistory: [] }),
       setCrossTab: (partial: Partial<CrossTabConfig>) =>
         set((state) => ({ crossTab: { ...state.crossTab, ...partial } })),
   openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => {
