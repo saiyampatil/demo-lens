@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { QUESTIONS, WAVES } from '@/engine/questions'
+import { useNavigate } from 'react-router-dom'
 import PageHeader from '@/components/PageHeader'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
 
@@ -106,8 +107,8 @@ const seg = (on: boolean) =>
   }`
 
 export default function Weights() {
+  const navigate = useNavigate()
   const weighted = useLensStore((s) => s.weighted)
-  const setWeighted = useLensStore((s) => s.setWeighted)
   const [wave, setWave] = useState<string>('All')
   const [profileVar, setProfileVar] = useState<ProfileVar>('AGE')
 
@@ -152,31 +153,19 @@ export default function Weights() {
         />
         <div className="mt-5 space-y-6">
 
-        {/* Switch + verdict */}
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className={`${card} flex items-start justify-between gap-4 p-5`}>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Use weights in analysis</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Weight variable <span className="font-mono">wt</span> · age × gender. Applies to Cross-tabs; Home and Ask AI always show weighted results.
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={weighted}
-              aria-label="Use weights in analysis"
-              onClick={() => setWeighted(!weighted)}
-              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40 ${weighted ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-            >
-              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${weighted ? 'left-[22px]' : 'left-0.5'}`} />
-            </button>
-          </div>
-          <div className={`${card} p-5 lg:col-span-2`}>
+        {/* Verdict */}
+        <section>
+          <div className={`${card} p-5`}>
             <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyle}`}>
               {status === 'healthy' ? 'Healthy' : status === 'acceptable' ? 'Acceptable' : 'Review'}
             </span>
             <p className="mt-2 text-sm text-foreground">{verdict}</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Weighting in Cross-tabs is {weighted ? 'ON' : 'OFF'}{' '}
+              <button type="button" onClick={() => navigate('/cross-tabs')} className="font-medium text-primary underline underline-offset-2 hover:opacity-80">
+                Change in Cross-tabs →
+              </button>
+            </p>
           </div>
         </section>
 

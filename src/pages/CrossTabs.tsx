@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, Cell as BarCell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { useLensStore } from '@/store/useLensStore'
+import { useLensStore, type WaveScope } from '@/store/useLensStore'
 import { crosstab, type Filter } from '@/engine/crosstab'
 import PageHeader from '@/components/PageHeader'
+import Select from '@/components/ui/Select'
 import { QUESTIONS, WAVES, BRANDS, type QuestionDef } from '@/engine/questions'
 
 type Result = ReturnType<typeof crosstab>
@@ -85,6 +87,7 @@ export default function CrossTabs() {
   const crossTab = useLensStore((s) => s.crossTab)
   const setCrossTab = useLensStore((s) => s.setCrossTab)
   const waveScope = useLensStore((s) => s.waveScope)
+  const setWaveScope = useLensStore((s) => s.setWaveScope)
   const weighted = useLensStore((s) => s.weighted)
   const setWeighted = useLensStore((s) => s.setWeighted)
 
@@ -94,9 +97,22 @@ export default function CrossTabs() {
   const [dataLabels, setDataLabels] = useState(true)
   const [showSig, setShowSig] = useState(true)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [displayOpen, setDisplayOpen] = useState(false)
+  const [zoomAxis, setZoomAxis] = useState(false)
   const [fVar, setFVar] = useState('AGE')
   const [fCodes, setFCodes] = useState<(number | string)[]>([])
   const [toast, setToast] = useState('')
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!displayOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDisplayOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [displayOpen])
 
   const q = qDef(crossTab.row)
   const isMean = isMeanQuestion(crossTab.row)
@@ -135,6 +151,16 @@ export default function CrossTabs() {
   const sigText = isMean ? 'means · not significance-tested' : crossTab.column === 'WAVE' ? 'significance vs previous wave at 95%' : crossTab.column === 'TOTAL' ? 'no significance test' : 'significance vs Total at 95%'
   const statText = isMean ? 'means' : crossTab.stat === 'counts' ? (weighted ? 'weighted counts' : 'counts') : 'column %'
   const definition = `Showing ${q?.label ?? crossTab.row} by ${columnLabel(crossTab.column)} · ${scopeText} · ${weighted ? 'weighted' : 'unweighted'} · ${statText} · ${sigText}`
+  const displaySummary = [
+    ...(weighted ? [] : ['unweighted']),
+    ...(crossTab.stat === 'counts' ? ['counts'] : []),
+    ...(decimals === 1 ? ['1 decimal'] : []),
+  ].join(' · ')
+  const scopeOptions = [
+    { value: 'All', label: 'All waves' },
+    ...WAVES.map((w) => ({ value: w, label: w })),
+  ]
+  const isWaveCols = crossTab.column === 'WAVE'
 
   const chartValue = (cell: ResultCell): number => {
     if (isMean) return cell.rawValue
@@ -183,7 +209,30 @@ export default function CrossTabs() {
   })
 
   const maxQ = q?.id === 'Q6' ? 10 : q?.id === 'Q4' ? 5 : null
-  const yDomain: [number, number | 'auto'] = chartType === 'stacked' ? [0, 100] : isMean ? [0, maxQ ?? 'auto'] : crossTab.stat === 'counts' ? [0, 'auto'] : [0, 100]
+  const isPct = !isMean && crossTab.stat === 'colpct'
+  const zoomable = (chartType === 'line' || chartType === 'column') && isPct
+  const effectiveZoom = zoomable && zoomAxis
+  const zoomBounds = useMemo(() => {
+    if (!effectiveZoom) return null
+    const vals: number[] = []
+    if (useRowsOnX) {
+      rowData.forEach((d) => { if (typeof d.v === 'number') vals.push(d.v) })
+    } else {
+      colData.forEach((d) => {
+        series.forEach((s) => {
+          const v = d[s.key]
+          if (typeof v === 'number') vals.push(v)
+        })
+      })
+    }
+    if (vals.length === 0) return null
+    const lo = Math.max(0, Math.floor(Math.min(...vals) - 5))
+    const hi = Math.min(100, Math.ceil(Math.max(...vals) + 5))
+    return { lo, hi: Math.max(hi, lo + 1) }
+  }, [effectiveZoom, useRowsOnX, rowData, colData, series])
+  const yDomain: [number, number | 'auto'] = zoomBounds
+    ? [zoomBounds.lo, zoomBounds.hi]
+    : chartType === 'stacked' ? [0, 100] : isMean ? [0, maxQ ?? 'auto'] : crossTab.stat === 'counts' ? [0, 'auto'] : [0, 100]
   const tickFmt = (v: unknown) => (typeof v === 'number' ? (isMean || crossTab.stat === 'counts' ? String(v) : `${v}%`) : '')
   const tipFmt = (v: unknown) => (typeof v === 'number' ? fmtNumber(v) : '')
 
@@ -211,8 +260,8 @@ export default function CrossTabs() {
       savedAt: new Date().toISOString(),
     }
     useLensStore.setState((s: StoreState) => ({ savedResults: [...s.savedResults, item] as StoreState['savedResults'] }))
-    setToast('Saved to storyboard')
-    window.setTimeout(() => setToast(''), 2200)
+    setToast('show')
+    window.setTimeout(() => setToast(''), 4000)
   }
 
   const exportCsv = () => {
@@ -247,8 +296,6 @@ export default function CrossTabs() {
     setFilterOpen(false)
     setFCodes([])
   }
-
-  const clearScope = () => useLensStore.setState({ waveScope: 'All' } as Partial<StoreState>)
 
   const questionsBySection = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -332,7 +379,7 @@ export default function CrossTabs() {
             </div>
             <div className="flex gap-2">
               <button type="button" onClick={exportCsv} className="h-9 rounded-[10px] border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40">
-                Export to Excel (.csv)
+                Export CSV
               </button>
               <button type="button" onClick={save} className="h-9 rounded-[10px] bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary/40">
                 Save to storyboard
@@ -341,37 +388,45 @@ export default function CrossTabs() {
           </div>
 
           {/* Layout bar */}
-          <div className={`${card} flex flex-wrap items-center gap-x-5 gap-y-3 p-3`}>
-            <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <div className={`${card} flex flex-nowrap items-center gap-x-3 gap-y-3 overflow-x-auto p-3`}>
+            <label className="flex shrink-0 items-center gap-2 text-xs font-medium text-muted-foreground">
               Rows
-              <select value={crossTab.row} onChange={(e) => setCrossTab({ row: e.target.value })} className={ctrl}>
-                {Object.values(QUESTIONS).map((qq) => (
-                  <option key={qq.id} value={qq.id}>{qq.label}</option>
-                ))}
-              </select>
+              <Select
+                label="Rows"
+                value={crossTab.row}
+                onChange={(v) => setCrossTab({ row: v })}
+                options={Object.values(QUESTIONS).map((qq) => ({ value: qq.id, label: qq.label }))}
+                className="w-[132px]"
+              />
             </label>
-            <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <label className="flex shrink-0 items-center gap-2 text-xs font-medium text-muted-foreground">
               Columns
-              <select value={crossTab.column} onChange={(e) => setCrossTab({ column: e.target.value })} className={ctrl}>
-                {COLUMN_CHOICES.map((c) => (
-                  <option key={c.id} value={c.id}>{c.id === 'TOTAL' ? c.label : `Total + ${c.label}`}</option>
-                ))}
-              </select>
+              <Select
+                label="Columns"
+                value={crossTab.column}
+                onChange={(v) => setCrossTab({ column: v })}
+                options={COLUMN_CHOICES.map((c) => ({ value: c.id, label: c.id === 'TOTAL' ? c.label : `Total + ${c.label}` }))}
+                className="w-[132px]"
+              />
             </label>
-            {waveScope !== 'All' && crossTab.column === 'WAVE' && (
-              <span className="text-xs text-muted-foreground">Wave columns show all waves</span>
+            <label className="flex shrink-0 items-center gap-2 text-xs font-medium text-muted-foreground">
+              Waves
+              <Select
+                label="Waves"
+                value={waveScope}
+                onChange={(v) => setWaveScope(v as WaveScope)}
+                options={scopeOptions}
+                disabled={isWaveCols}
+                className="w-[104px]"
+              />
+            </label>
+            {isWaveCols && (
+              <span className="shrink-0 text-xs text-muted-foreground">Wave columns show all waves</span>
             )}
-
-            <div className="relative flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Filters</span>
-              {scoped && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-foreground">
-                  Wave: {waveScope}
-                  <button type="button" onClick={clearScope} aria-label="Remove wave filter" className="text-muted-foreground hover:text-foreground">✕</button>
-                </span>
-              )}
+            <div className="relative flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto">
+              <span className="shrink-0 text-xs font-medium text-muted-foreground">Filters</span>
               {crossTab.filters.map((f, i) => (
-                <span key={`${f.variable}-${i}`} className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-foreground">
+                <span key={`${f.variable}-${i}`} className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-foreground">
                   {filterLabel(f)}
                   <button
                     type="button"
@@ -383,8 +438,8 @@ export default function CrossTabs() {
                   </button>
                 </span>
               ))}
-              {!scoped && crossTab.filters.length === 0 && <span className="text-xs text-muted-foreground">All respondents</span>}
-              <button type="button" onClick={() => setFilterOpen((o) => !o)} className="rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
+              {crossTab.filters.length === 0 && <span className="shrink-0 text-xs text-muted-foreground">All respondents</span>}
+              <button type="button" onClick={() => setFilterOpen((o) => !o)} className="shrink-0 rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
                 + Add filter
               </button>
 
@@ -429,28 +484,51 @@ export default function CrossTabs() {
               )}
             </div>
 
-            <div className="ml-auto flex flex-wrap items-center gap-3">
-              <div className="inline-flex overflow-hidden rounded-[10px] border border-border">
-                <button type="button" onClick={() => setCrossTab({ stat: 'colpct' })} className={seg(isMean || crossTab.stat === 'colpct')} disabled={isMean}>
-                  {isMean ? 'Mean' : 'Column %'}
-                </button>
-                <button type="button" onClick={() => setCrossTab({ stat: 'counts' })} className={seg(!isMean && crossTab.stat === 'counts')} disabled={isMean}>
-                  Counts
-                </button>
-              </div>
-              <label className="flex cursor-pointer items-center gap-1.5 text-xs text-foreground">
-                <input type="checkbox" checked={weighted} onChange={(e) => setWeighted(e.target.checked)} className="accent-primary" />
-                Weighted
-              </label>
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                Decimals
-                <select value={decimals} onChange={(e) => setCrossTab({ decimals: Number(e.target.value) === 1 ? 1 : 0 })} className={ctrl}>
-                  <option value={0}>0</option>
-                  <option value={1}>1</option>
-                </select>
-              </label>
+            <div className="relative ml-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setDisplayOpen((o) => !o)}
+                aria-expanded={displayOpen}
+                className="h-8 rounded-[10px] border border-border bg-background px-3 text-xs font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                Display
+              </button>
+              {displayOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setDisplayOpen(false)} />
+                  <div className={`${card} absolute right-0 top-10 z-20 w-64 space-y-4 p-4 shadow-lg`}>
+                    <div>
+                      <p className="mb-1.5 text-xs font-medium text-muted-foreground">Show</p>
+                      <div className="inline-flex overflow-hidden rounded-[10px] border border-border">
+                        <button type="button" onClick={() => setCrossTab({ stat: 'colpct' })} className={seg(isMean || crossTab.stat === 'colpct')} disabled={isMean}>
+                          {isMean ? 'Mean' : 'Column %'}
+                        </button>
+                        <button type="button" onClick={() => setCrossTab({ stat: 'counts' })} className={seg(!isMean && crossTab.stat === 'counts')} disabled={isMean}>
+                          Counts
+                        </button>
+                      </div>
+                    </div>
+                    <label className="flex cursor-pointer items-center gap-1.5 text-xs text-foreground">
+                      <input type="checkbox" checked={weighted} onChange={(e) => setWeighted(e.target.checked)} className="accent-primary" />
+                      Weighted
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      Decimals
+                      <Select
+                        label="Decimals"
+                        value={String(decimals)}
+                        onChange={(v) => setCrossTab({ decimals: Number(v) === 1 ? 1 : 0 })}
+                        options={[{ value: '0', label: '0' }, { value: '1', label: '1' }]}
+                      />
+                    </label>
+                  </div>
+                </>
+              )}
             </div>
           </div>
+          {displaySummary && (
+            <p className="text-xs text-muted-foreground">Display: {displaySummary}</p>
+          )}
 
           <p className="text-sm text-muted-foreground">{definition}</p>
 
@@ -551,6 +629,12 @@ export default function CrossTabs() {
                     <input type="checkbox" checked={dataLabels} onChange={(e) => setDataLabels(e.target.checked)} className="accent-primary" />
                     Data labels
                   </label>
+                  {zoomable && (
+                    <label className="flex items-center gap-1.5 text-xs text-foreground">
+                      <input type="checkbox" checked={zoomAxis} onChange={(e) => setZoomAxis(e.target.checked)} className="accent-primary" />
+                      Zoom to data
+                    </label>
+                  )}
                   {!isMean && (
                     <label className="flex items-center gap-1.5 text-xs text-foreground">
                       <input type="checkbox" checked={showSig} onChange={(e) => setShowSig(e.target.checked)} className="accent-primary" />
@@ -574,6 +658,9 @@ export default function CrossTabs() {
               </div>
 
               <div className="mt-2 w-full" style={{ height: chartType === 'hbar' ? Math.max(220, rowData.length * 44) : 300 }}>
+                {zoomBounds && (
+                  <p className="mb-1 text-xs text-muted-foreground">Axis starts at {zoomBounds.lo}%</p>
+                )}
                 <ResponsiveContainer width="100%" height="100%">
                   {useRowsOnX ? (
                     chartType === 'hbar' ? (
@@ -658,8 +745,15 @@ export default function CrossTabs() {
       </main>
 
       {toast && (
-        <div role="status" className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-[10px] bg-foreground px-4 py-2.5 text-sm text-background shadow-lg">
-          {toast}
+        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-[10px] bg-foreground px-4 py-2.5 text-sm text-background shadow-lg">
+          <span>Saved to storyboard</span>
+          <button
+            type="button"
+            onClick={() => { setToast(''); navigate('/storyboards') }}
+            className="font-medium underline underline-offset-2 hover:opacity-80"
+          >
+            View storyboard
+          </button>
         </div>
       )}
     </div>
