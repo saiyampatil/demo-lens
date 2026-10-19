@@ -21,6 +21,7 @@ export interface LensState {
   setWeighted: (weighted: boolean) => void
   addSavedResult: (result: unknown) => void
   setCrossTab: (partial: Partial<CrossTabConfig>) => void
+  openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => void
 }
 
 export const useLensStore = create<LensState>()(
@@ -41,6 +42,10 @@ export const useLensStore = create<LensState>()(
       addSavedResult: (result: unknown) => set((state) => ({ savedResults: [...state.savedResults, result] })),
       setCrossTab: (partial: Partial<CrossTabConfig>) =>
         set((state) => ({ crossTab: { ...state.crossTab, ...partial } })),
+  openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => {
+    set((state) => ({ crossTab: { ...state.crossTab, row: view.row, column: view.column, filters: view.filters } }))
+    navigate('/cross-tabs')
+  },
     }),
     {
       name: 'lens-storage',
