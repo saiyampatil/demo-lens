@@ -80,9 +80,17 @@ function readSaved(r: unknown): { title: string; date: string } | null {
   return { title, date }
 }
 
-function Sparkline({ values, max, labelFirst, labelLast }: { values: number[]; max: number; labelFirst: string; labelLast: string }) {
+// Sparkline scaled to its own data range so movement is visible.
+// The start/end labels underneath keep the scale honest.
+function Sparkline({ values, labelFirst, labelLast }: { values: number[]; labelFirst: string; labelLast: string }) {
   if (values.length < 2) return null
-  const y = (v: number) => 30 - (Math.min(max, Math.max(0, v)) / max) * 26
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min
+  const pad = range > 0 ? range * 0.1 : Math.max(Math.abs(max) * 0.05, 0.5)
+  const lo = min - pad
+  const hi = max + pad
+  const y = (v: number) => 30 - ((v - lo) / (hi - lo)) * 26
   const pts = values.map((v, i) => `${(i / (values.length - 1)) * 100},${y(v)}`).join(' ')
   return (
     <div>
@@ -131,7 +139,6 @@ export default function Home() {
         change: isMean ? signed(cur - prev, 1) : ptsTxt(cur - prev),
         sig: isMean ? 0 : row.cells[latestWave]!.significance,
         spark: WAVES.map((w) => row.cells[w]!.rawValue),
-        max: isMean ? 10 : 100,
         first: `${first} ${f(start)}`,
         last: `${latestWave} ${f(cur)}`,
         view,
@@ -242,7 +249,7 @@ export default function Home() {
           <span className={chip}><span className="h-2 w-2 rounded-full bg-sig-high" aria-hidden="true" />Data ready · {latestWave} (n={latestN.toLocaleString()})</span>
           <span className={chip}>
             <span className={`h-2 w-2 rounded-full ${efficiency >= 0.9 ? 'bg-sig-high' : 'bg-[#B45309]'}`} aria-hidden="true" />
-            Weighting {Math.round(efficiency * 100)}% efficient
+            Weighting {Math.round(efficiency * 100)}% efficient ({latestWave})
           </span>
           <span className={chip}>{WAVES.length} waves · {totalN.toLocaleString()} respondents</span>
           {nextWave && <span className={chip}>Next wave expected {nextWave}</span>}
@@ -286,14 +293,14 @@ export default function Home() {
                 <span className={`mt-1 text-xs tabular-nums ${k.sig === 1 ? 'text-sig-high' : k.sig === -1 ? 'text-sig-low' : 'text-muted-foreground'}`}>
                   {k.sig === 1 ? '▲ ' : k.sig === -1 ? '▼ ' : ''}{k.change} vs {previousWave}{k.sig === 0 && k.note === undefined ? ' · not significant' : ''}{k.note ? ` · ${k.note}` : ''}
                 </span>
-                <span className="mt-3"><Sparkline values={k.spark} max={k.max} labelFirst={k.first} labelLast={k.last} /></span>
+                <span className="mt-3"><Sparkline values={k.spark} labelFirst={k.first} labelLast={k.last} /></span>
               </button>
             ))}
           </div>
         </section>
 
         {/* 5. Changes + next steps */}
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <section className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
           <div className={`${card} p-5 lg:col-span-2`}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-sm font-semibold text-foreground">What changed since {previousWave}</h2>
@@ -340,7 +347,7 @@ export default function Home() {
         </section>
 
         {/* 6. Competitive context */}
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <section className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
           <div className={`${card} p-5 lg:col-span-3`}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-sm font-semibold text-foreground">Brand league · {latestWave}</h2>
