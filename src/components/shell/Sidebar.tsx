@@ -6,16 +6,26 @@ import {
   Sparkles,
   Scale,
   LayoutDashboard,
-  ChevronDown,
 } from 'lucide-react'
+import { WAVES } from '@/engine/questions'
 
-const navItems = [
-  { name: 'Home', path: '/home', icon: Home },
-  { name: 'Waves', path: '/waves', icon: Activity },
-  { name: 'Cross-tabs', path: '/cross-tabs', icon: Table2 },
-  { name: 'Ask AI', path: '/ask', icon: Sparkles },
-  { name: 'Weights', path: '/weights', icon: Scale },
-  { name: 'Storyboards', path: '/storyboards', icon: LayoutDashboard },
+const navGroups: { label: string; items: { name: string; path: string; icon: typeof Home }[] }[] = [
+  {
+    label: 'Analyse',
+    items: [
+      { name: 'Home', path: '/home', icon: Home },
+      { name: 'Ask AI', path: '/ask', icon: Sparkles },
+      { name: 'Cross-tabs', path: '/cross-tabs', icon: Table2 },
+    ],
+  },
+  { label: 'Present', items: [{ name: 'Storyboards', path: '/storyboards', icon: LayoutDashboard }] },
+  {
+    label: 'Data',
+    items: [
+      { name: 'Waves', path: '/waves', icon: Activity },
+      { name: 'Weights', path: '/weights', icon: Scale },
+    ],
+  },
 ]
 
 export default function Sidebar() {
@@ -33,45 +43,46 @@ export default function Sidebar() {
           </span>
         </div>
 
-        {/* Project Switcher */}
+        {/* Project (static, not interactive) */}
         <div className="p-3">
-          <button
-            type="button"
-            className="w-full text-left p-2.5 rounded-lg border border-border bg-background hover:bg-muted/60 transition-colors flex items-center justify-between group"
-          >
-            <div className="min-w-0 pr-1">
-              <div className="text-xs font-semibold text-foreground truncate">
-                Campa Beverage Tracker
-              </div>
-              <div className="text-[11px] text-muted-foreground truncate">
-                India · 3 waves
-              </div>
+          <div className="w-full text-left p-2.5 rounded-lg border border-border bg-background">
+            <div className="text-xs font-semibold text-foreground truncate">
+              Campa Beverage Tracker
             </div>
-            <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-          </button>
+            <div className="text-[11px] text-muted-foreground truncate">
+              India · {WAVES.length} waves
+            </div>
+          </div>
         </div>
 
         {/* Navigation Items */}
-        <nav className="px-2 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    isActive
-                      ? 'bg-secondary text-primary font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/70 font-normal'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 shrink-0 stroke-[1.75]" />
-                <span>{item.name}</span>
-              </NavLink>
-            )
-          })}
+        <nav className="px-2 pb-2">
+          {navGroups.map((group) => (
+            <div key={group.label} className="mt-4">
+              <p className="mb-1 px-3 text-xs text-muted-foreground">{group.label}</p>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive
+                            ? 'bg-secondary text-primary font-medium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70 font-normal'
+                        }`
+                      }
+                    >
+                      <Icon className="w-4 h-4 shrink-0 stroke-[1.75]" />
+                      <span>{item.name}</span>
+                    </NavLink>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
 

@@ -4,6 +4,7 @@ import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { significantChanges, funnel, latestWave, previousWave } from '@/engine/insights'
 import { BRANDS, WAVES } from '@/engine/questions'
+import PageHeader from '@/components/PageHeader'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
 
 type Row = ReturnType<typeof crosstab>['rows'][number]
@@ -234,20 +235,20 @@ export default function Home() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
+      <div className="mx-auto w-full max-w-6xl p-6">
         {/* 1. Header + trust chips */}
-        <header className="space-y-3">
-          <h1 className="text-2xl font-semibold text-foreground">Campa Beverage Tracker</h1>
-          <div className="flex flex-wrap gap-2">
-            <span className={chip}><span className="h-2 w-2 rounded-full bg-sig-high" aria-hidden="true" />Data ready · {latestWave} (n={latestN.toLocaleString()})</span>
-            <span className={chip}>
-              <span className={`h-2 w-2 rounded-full ${efficiency >= 0.9 ? 'bg-sig-high' : 'bg-[#B45309]'}`} aria-hidden="true" />
-              Weighting {Math.round(efficiency * 100)}% efficient
-            </span>
-            <span className={chip}>{WAVES.length} waves · {totalN.toLocaleString()} respondents</span>
-            {nextWave && <span className={chip}>Next wave expected {nextWave}</span>}
-          </div>
-        </header>
+        <PageHeader title="Campa Beverage Tracker" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className={chip}><span className="h-2 w-2 rounded-full bg-sig-high" aria-hidden="true" />Data ready · {latestWave} (n={latestN.toLocaleString()})</span>
+          <span className={chip}>
+            <span className={`h-2 w-2 rounded-full ${efficiency >= 0.9 ? 'bg-sig-high' : 'bg-[#B45309]'}`} aria-hidden="true" />
+            Weighting {Math.round(efficiency * 100)}% efficient
+          </span>
+          <span className={chip}>{WAVES.length} waves · {totalN.toLocaleString()} respondents</span>
+          {nextWave && <span className={chip}>Next wave expected {nextWave}</span>}
+        </div>
+
+        <div className="mt-5 space-y-6">
 
         {/* 2. Ask */}
         <form className={`${card} flex flex-wrap items-center gap-2 p-2 pl-4`} onSubmit={(e) => { e.preventDefault(); submitQuestion() }}>
@@ -439,6 +440,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+        </div>
       </div>
     </div>
   )

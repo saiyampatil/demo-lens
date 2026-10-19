@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useLensStore } from '@/store/useLensStore'
 import { significantChanges } from '@/engine/insights'
 import { WAVES } from '@/engine/questions'
+import PageHeader from '@/components/PageHeader'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
 import datamapUrl from '../../data/campa_datamap.xlsx?url'
 
@@ -344,14 +345,13 @@ export default function Waves() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">Waves</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Every survey wave in this study, what changed in each, and where to add the next one.</p>
-          </div>
-          <button type="button" className={btnPrimary} onClick={() => setDialogOpen(true)}>+ Add wave</button>
-        </header>
+      <div className="mx-auto w-full max-w-6xl p-6">
+        <PageHeader
+          title="Waves"
+          description="Every survey wave in this study, what changed in each, and where to add the next one."
+          actions={<button type="button" className={btnPrimary} onClick={() => setDialogOpen(true)}>+ Add wave</button>}
+        />
+        <div className="mt-5 space-y-6">
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
@@ -504,6 +504,7 @@ export default function Waves() {
               <p className="mt-3 text-xs text-muted-foreground">In this demo, new waves are checked and listed but not yet added to the analysis.</p>
             </div>
           </aside>
+        </div>
         </div>
       </div>
 

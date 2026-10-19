@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, Cell as BarCell, Line, LineChart, Respons
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab, type Filter } from '@/engine/crosstab'
 import { QUESTIONS, type QuestionDef } from '@/engine/questions'
+import PageHeader from '@/components/PageHeader'
 
 // ---------- types ----------
 type Kind = 'line' | 'column' | 'hbar'
@@ -608,16 +609,18 @@ export default function Storyboards() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-card px-6 py-3">
-        <div className="min-w-0">
-          <input
-            value={board.title}
-            onChange={(e) => setBoard((b) => ({ ...b, title: e.target.value }))}
-            aria-label="Storyboard title"
-            className="w-full min-w-[240px] rounded-[8px] bg-transparent px-1 text-xl font-semibold text-foreground hover:bg-muted/60 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
-          />
-          <p className="px-1 text-xs text-muted-foreground">{slides.length} slide{slides.length === 1 ? '' : 's'} · live from the survey data · saved automatically</p>
-        </div>
+      <div className="border-b border-border bg-card px-6 py-3">
+        <PageHeader
+          title={
+            <input
+              value={board.title}
+              onChange={(e) => setBoard((b) => ({ ...b, title: e.target.value }))}
+              aria-label="Storyboard title"
+              className="w-full min-w-[240px] rounded-[8px] bg-transparent px-1 text-xl font-semibold text-foreground hover:bg-muted/60 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          }
+          description={`${slides.length} slide${slides.length === 1 ? '' : 's'} · live from the survey data · saved automatically`}
+          actions={
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex overflow-hidden rounded-[10px] border border-border">
             {(['slides', 'outline', 'dashboard'] as const).map((v) => (
@@ -644,7 +647,9 @@ export default function Storyboards() {
               </>
             )}
           </div>
-        </div>
+          </div>
+          }
+        />
       </div>
 
       {/* Body */}

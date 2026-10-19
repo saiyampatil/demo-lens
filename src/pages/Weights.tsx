@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { QUESTIONS, WAVES } from '@/engine/questions'
+import PageHeader from '@/components/PageHeader'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
 
 // ---------- data ----------
@@ -134,21 +135,22 @@ export default function Weights() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
+      <div className="mx-auto w-full max-w-6xl p-6">
         {/* Header */}
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">Weights</h1>
-            <p className="mt-1 text-sm text-muted-foreground">How the sample is weighted, how healthy the weighting is, and how much it changes your results.</p>
-          </div>
-          <div className="inline-flex overflow-hidden rounded-[10px] border border-border bg-card" role="tablist" aria-label="Wave">
-            {['All', ...WAVES].map((w) => (
-              <button key={w} type="button" role="tab" aria-selected={wave === w} onClick={() => setWave(w)} className={seg(wave === w)}>
-                {w === 'All' ? 'All waves' : w}
-              </button>
-            ))}
-          </div>
-        </header>
+        <PageHeader
+          title="Weights"
+          description="How the sample is weighted, how healthy the weighting is, and how much it changes your results."
+          actions={
+            <div className="inline-flex overflow-hidden rounded-[10px] border border-border bg-card" role="tablist" aria-label="Wave">
+              {['All', ...WAVES].map((w) => (
+                <button key={w} type="button" role="tab" aria-selected={wave === w} onClick={() => setWave(w)} className={seg(wave === w)}>
+                  {w === 'All' ? 'All waves' : w}
+                </button>
+              ))}
+            </div>
+          }
+        />
+        <div className="mt-5 space-y-6">
 
         {/* Switch + verdict */}
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -312,6 +314,7 @@ export default function Weights() {
           Weights come from the <span className="font-mono">wt</span> column in the data file, built to age × gender targets set in the study design. Effective base = (Σw)² ÷ Σw².
           Creating new weights (for example RIM weighting to new targets) will come in a later release.
         </p>
+        </div>
       </div>
     </div>
   )

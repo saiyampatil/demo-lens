@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell as BarCell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab, type Filter } from '@/engine/crosstab'
+import PageHeader from '@/components/PageHeader'
 import { QUESTIONS, WAVES, BRANDS, type QuestionDef } from '@/engine/questions'
 
 type Result = ReturnType<typeof crosstab>
@@ -314,7 +315,12 @@ export default function CrossTabs() {
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
-        <div className="space-y-4 p-6">
+        <div className="p-6">
+          <PageHeader
+            title="Cross-tabs"
+            description="Build tables from any question, compare waves and groups, and save findings."
+          />
+          <div className="mt-5 space-y-4">
           {/* Toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="inline-flex overflow-hidden rounded-[10px] border border-border bg-card">
@@ -647,6 +653,7 @@ export default function CrossTabs() {
             {q?.wording ?? q?.label}. Base: {baseText(crossTab.row)}. {weighted ? 'Weighted by age × gender.' : 'Unweighted.'}{' '}
             {isMean ? 'Means are not significance-tested.' : '▲▼ significant at 95%.'} Cells with a base under 30 are hidden (–). All numbers are calculated from the survey data.
           </p>
+          </div>
         </div>
       </main>
 

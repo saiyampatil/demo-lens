@@ -5,6 +5,7 @@ import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { significantChanges, funnel, latestWave, previousWave } from '@/engine/insights'
 import { BRANDS, WAVES } from '@/engine/questions'
+import PageHeader from '@/components/PageHeader'
 
 type CtArgs = Parameters<typeof crosstab>[0]
 type Row = ReturnType<typeof crosstab>['rows'][number]
@@ -528,19 +529,19 @@ export default function AskAI() {
     <div className="flex h-full w-full overflow-hidden">
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-3xl space-y-5 p-6">
-            <header>
-              <h1 className="text-2xl font-semibold text-foreground">Ask the Campa research</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Ask in plain language. Lens plans the analysis, computes every number from the data, and shows its working.
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Market: India</span>
-                <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Waves: all {WAVES.length}</span>
-                <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Weighted</span>
-                <span className="text-muted-foreground">Applies to every answer</span>
-              </div>
-            </header>
+          <div className="mx-auto w-full max-w-3xl p-6">
+            <PageHeader
+              title="Ask the Campa research"
+              description="Ask in plain language. Lens plans the analysis, computes every number from the data, and shows its working."
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Market: India</span>
+              <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Waves: all {WAVES.length}</span>
+              <span className="rounded-md border border-border bg-card px-2 py-0.5 text-foreground">Weighted</span>
+              <span className="text-muted-foreground">Applies to every answer</span>
+            </div>
+
+            <div className="mt-5 space-y-5">
 
             {turns.length === 0 && (
               <div className={`${card} p-5`}>
@@ -575,6 +576,7 @@ export default function AskAI() {
               </div>
             ))}
             <div ref={endRef} />
+            </div>
           </div>
         </div>
 
