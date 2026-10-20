@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
 import { significantChanges, funnel, latestWave, previousWave } from '@/engine/insights'
@@ -12,11 +12,16 @@ type Row = ReturnType<typeof crosstab>['rows'][number]
 type View = Parameters<ReturnType<typeof useLensStore.getState>['openCrossTab']>[0]
 
 type Chart = {
-  type: 'line' | 'bar'
+  type: 'line' | 'bar' | 'scatter' | 'radar'
   data: Record<string, string | number>[]
   series: { key: string; label: string; color: string }[]
   yMax: number
   unit: '%' | 'mean'
+  xKey?: string
+  yKey?: string
+  xLabel?: string
+  yLabel?: string
+  radius?: number
   highlight?: string
 }
 type TableRow = { label: string; value: string; sig: number; base: number | null }
@@ -26,14 +31,14 @@ type Answer = {
   headline: string
   findings: { text: string; ref: string; sig: number }[]
   chart: Chart
-  tableHead: [string, string, string]
+  tableHead: string[]
   table: TableRow[]
   citation: string
   caveats: string[]
   view: View
   followUps: string[]
 }
-type Turn = { id: number; question: string; answer: Answer | null; chartType: 'line' | 'bar' }
+type Turn = { id: number; question: string; answer: Answer | null; chartType: 'line' | 'bar' | 'scatter' | 'radar' }
 
 const PURPLE = '#6B47D6'
 const GREY = '#C9C6D3'
@@ -48,6 +53,10 @@ const SUGGESTIONS = [
   "What is Campa's main-brand share?",
   'Which brand has the highest trial?',
   'How likely are people to recommend Campa?',
+  'How does Campa stack up against competitors?',
+  'Which brand has the strongest core competencies?',
+  'Who are Campa\'s main competitors in the market?',
+  'How does Campa\'s brand health compare with Thums Up?',
 ]
 
 const r = Math.round
@@ -307,6 +316,126 @@ function recommendAnswer(brand: string): Answer | null {
   }
 }
 
+function positioningAnswer(): Answer {
+  const ctAwareness = crosstab({ row: 'Q1', column: 'WAVE' })
+  const ctTrial = crosstab({ row: 'Q2', column: 'WAVE' })
+  const ctMain = crosstab({ row: 'Q3', column: 'WAVE' })
+
+  const data = BRANDS.map((b) => {
+    const r1 = ctAwareness.rows.find((x) => x.label === b.label)!
+    const r2 = ctTrial.rows.find((x) => x.label === b.label)!
+    const r3 = ctMain.rows.find((x) => x.label === b.label)!
+    const awareness = r1.cells[latestWave]!.rawValue
+    const trial = r2.cells[latestWave]!.rawValue
+    const mainBrand = r3.cells[latestWave]!.rawValue
+    const n = r1.cells[latestWave]!.unweightedBase
+    return { brand: b.label, awareness, trial, mainBrand, n }
+  }).sort((a, b) => b.mainBrand - a.mainBrand)
+
+  const leader = data[0]!
+  const challenger = data[1]!
+  const headline = `${leader.brand} leads the market at ${pct(leader.mainBrand)}% main-brand share with ${pct(leader.awareness)}% awareness; ${challenger.brand} is the closest challenger at ${pct(challenger.mainBrand)}% share.`
+
+  return {
+    understood: ['Brands: all five', `Wave: ${latestWave}`, 'X-axis: brand awareness (%)', 'Y-axis: main-brand share (%)', 'Bubble size: trial rate (%)'],
+    steps: [
+      { text: 'Awareness (Q1) by brand', ref: 'Q1 × Wave' },
+      { text: 'Trial (Q2) by brand', ref: 'Q2 × Wave' },
+      { text: 'Main-brand share (Q3) by brand', ref: 'Q3 × Wave' },
+    ],
+    headline,
+    findings: data.map((d) => ({
+      text: `${d.brand}: awareness ${pct(d.awareness)}, main-brand share ${pct(d.mainBrand)}, trial ${pct(d.trial)} (n=${d.n}).`,
+      ref: 'Q1, Q2, Q3 × Wave',
+      sig: 0,
+    })),
+    chart: {
+      type: 'scatter',
+      data: data.map((d) => ({ name: d.brand, x: d.awareness, y: d.mainBrand, size: d.trial, n: d.n })),
+      series: [{ key: 'x', label: 'Awareness', color: PURPLE }],
+      xKey: 'x',
+      yKey: 'y',
+      xLabel: 'Awareness (%)',
+      yLabel: 'Main-brand share (%)',
+      yMax: 100,
+      unit: '%',
+    },
+    tableHead: ['Brand', 'Awareness', 'Main-brand share', 'Trial', 'Base (n)'],
+    table: data.map((d) => ({ label: d.brand, value: `${pct(d.awareness)} / ${pct(d.mainBrand)} / ${pct(d.trial)}`, sig: 0, base: d.n })),
+    citation: `Q1, Q2, Q3 · ${latestWave} · weighted`,
+    caveats: ['Bubble size reflects trial rate; positions are computed from the latest wave.'],
+    view: { row: 'Q1', column: 'WAVE', filters: [] },
+    followUps: [
+      'Which brand has the strongest core competencies?',
+      'How does Campa compare with Coca-Cola?',
+      'What is Campa\'s main-brand share?',
+    ],
+  }
+}
+
+function competenciesAnswer(brand?: string): Answer {
+  const brands = brand ? [BRANDS.find((b) => b.label === brand)!] : BRANDS
+  const statements = [
+    { id: 'Q4_1', label: 'Good value for money' },
+    { id: 'Q4_2', label: 'A brand for people like me' },
+    { id: 'Q4_3', label: 'A taste I enjoy' },
+  ]
+
+  const seriesData: Record<string, number | string>[] = brands.map((b) => {
+    const row = crosstab({ row: 'Q4', column: 'WAVE', filters: [{ variable: 'Q3', codes: [b.code] }] })
+    const values: Record<string, number> = {}
+    statements.forEach((s) => {
+      const stmtRow = row.rows.find((r) => r.label === s.label)
+      values[s.label] = stmtRow?.cells[latestWave]?.rawValue ?? 0
+    })
+    return { brand: b.label, ...values, color: b.code === 1 ? PURPLE : GREY }
+  })
+
+  const focus = seriesData[0]!
+  const allBrands = seriesData.length > 1
+  const dimNames = statements.map((s) => s.label)
+  const leaderDim = dimNames.reduce((a, b) => (Number(focus[b]) > Number(focus[a]) ? b : a), dimNames[0])
+  const headline = allBrands
+    ? `Core competency profile across all five brands in ${latestWave}. ${focus.brand} leads on ${leaderDim}.`
+    : `${focus.brand}'s holistic core competency profile in ${latestWave}.`
+
+  return {
+    understood: ['Brands: ' + brands.map((b) => b.label).join(', '), `Wave: ${latestWave}`, 'Dimensions: Q4 attitude statements (1–5 scale)'],
+    steps: statements.map((s) => ({ text: `${s.label} by brand`, ref: `Q4 × Wave (filtered by brand)` })),
+    headline,
+    findings: seriesData.map((d) => {
+      const best = dimNames.reduce((a, b) => (Number(d[b]) > Number(d[a]) ? b : a), dimNames[0])
+      const worst = dimNames.reduce((a, b) => (Number(d[b]) < Number(d[a]) ? b : a), dimNames[0])
+      return {
+        text: `${d.brand}: strongest on ${best} (${Number(d[best]).toFixed(1)}/5), weakest on ${worst} (${Number(d[worst]).toFixed(1)}/5).`,
+        ref: 'Q4 × Wave',
+        sig: 0,
+      }
+    }),
+    chart: {
+      type: 'radar',
+      data: statements.map((s) => ({ label: s.label, ...Object.fromEntries(seriesData.map((d) => [d.brand as string, Number(d[s.label])])) })),
+      series: seriesData.map((d) => ({ key: d.brand as string, label: d.brand as string, color: d.color as string })),
+      yMax: 5,
+      unit: 'mean',
+      radius: 80,
+    },
+    tableHead: ['Brand', ...statements.map((s) => s.label)],
+    table: seriesData.map((d) => ({
+      label: d.brand as string,
+      value: statements.map((s) => Number(d[s.label]).toFixed(1)).join(' / '),
+      sig: 0,
+      base: null,
+    })),
+    citation: `Q4 × Q3 · ${latestWave} · weighted`,
+    caveats: ['Scores are mean ratings on a 1–5 scale; brands not asked in a given wave are omitted.'],
+    view: { row: 'Q4', column: 'WAVE', filters: [] },
+    followUps: allBrands
+      ? ['How does Campa stack up against competitors?', "Who are Campa's main competitors in the market?", "What is Campa's main-brand share?"]
+      : ['How does Campa stack up against competitors?', 'Which brand has the strongest core competencies?', "What is Campa's main-brand share?"],
+  }
+}
+
 function answerFor(text: string): Answer | null {
   const t = text.toLowerCase()
   const mentioned = BRANDS.map((b) => b.label).filter((l) => t.includes(l.toLowerCase()))
@@ -321,7 +450,11 @@ function answerFor(text: string): Answer | null {
   if (/(driv|who |which age|age group|by age)/.test(t)) return trendAnswer(/(trial|tried)/.test(t) ? 'Q2' : 'Q1', brand, true)
   if (/(aware|heard)/.test(t)) return trendAnswer('Q1', brand, false)
   if (/(trial|tried)/.test(t)) return trendAnswer('Q2', brand, false)
-  if (/(grow|growth|chang|trend)/.test(t)) return trendAnswer('Q1', brand, false)
+  if (/(competitor|stack up|positioning|position|market|aware vs|aware and)/.test(t)) return positioningAnswer()
+  if (/(competenc|core|holistic|profile|value for money|taste i enjoy|brand for people)/.test(t)) {
+    const mentioned = BRANDS.map((b) => b.label).filter((l) => t.includes(l.toLowerCase()))
+    return competenciesAnswer(mentioned[0])
+  }
   return null
 }
 
@@ -341,7 +474,7 @@ function ChartView({ c }: { c: Chart }) {
           </span>
         ))}
       </div>
-      <div className="h-56 w-full">
+      <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           {c.type === 'line' ? (
             <LineChart data={c.data} margin={{ top: 22, right: 24, left: 0, bottom: 0 }}>
@@ -354,6 +487,28 @@ function ChartView({ c }: { c: Chart }) {
                 </Line>
               ))}
             </LineChart>
+          ) : c.type === 'scatter' ? (
+            <ScatterChart margin={{ top: 22, right: 24, left: 36, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8E6EE" />
+              <XAxis dataKey="x" type="number" domain={[0, 100]} tick={{ fontSize: 12 }} label={{ value: c.xLabel ?? 'X', position: 'bottom', offset: 0 }} />
+              <YAxis dataKey="y" type="number" domain={[0, c.yMax]} tick={{ fontSize: 12 }} width={36} label={{ value: c.yLabel ?? 'Y', position: 'left', angle: -90, offset: 0 }} />
+              <Tooltip cursor={{ fill: '#F3F6FF' }} />
+              <Scatter name="Positioning" data={c.data} fill={PURPLE} opacity={0.7} isAnimationActive={false}>
+                {c.data.map((_, i) => <Cell key={i} fill={PURPLE} />)}
+              </Scatter>
+            </ScatterChart>
+          ) : c.type === 'radar' ? (
+            <RadarChart margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
+              <PolarGrid stroke="#E8E6EE" />
+              <PolarAngleAxis dataKey="label" tick={{ fontSize: 11 }} />
+              <PolarRadiusAxis domain={[0, c.yMax]} tick={{ fontSize: 11 }} />
+              <Tooltip cursor={{ fill: '#F3F6FF' }} />
+              {c.series.map((s) => (
+                <Radar key={s.key} dataKey={s.key} stroke={s.color} strokeWidth={2} fill={s.color} fillOpacity={0.1} isAnimationActive={false}>
+                  <LabelList dataKey={s.key} position="top" fontSize={11} fill="#6B47D6" />
+                </Radar>
+              ))}
+            </RadarChart>
           ) : (
             <BarChart data={c.data} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8E6EE" />
@@ -559,7 +714,7 @@ export default function AskAI() {
       waveScope: 'All',
       weighted: true,
       view: 'both',
-      chartType: t.answer.chart.type === 'line' ? 'line' : 'column',
+      chartType: t.answer.chart.type === 'line' ? 'line' : t.answer.chart.type === 'scatter' ? 'scatter' : t.answer.chart.type === 'radar' ? 'radar' : 'column',
       savedAt: new Date().toISOString(),
     }
     useLensStore.setState((s) => ({ savedResults: [...s.savedResults, item] }))
