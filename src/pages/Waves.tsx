@@ -87,7 +87,7 @@ export default function Waves() {
   }, [stored])
 
   const changesByWave = useMemo(
-    () => ANALYSIS_WAVES.map((w, i) => (i === 0 ? null : significantChanges(WAVES[i]!, WAVES[i - 1]!))),
+    () => ANALYSIS_WAVES.map((_, i) => (i === 0 ? null : significantChanges(WAVES[i]!, WAVES[i - 1]!))),
     [],
   )
 
