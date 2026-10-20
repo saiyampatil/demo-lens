@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLensStore } from '@/store/useLensStore'
 import { crosstab } from '@/engine/crosstab'
-import { significantChanges, funnel, latestWave, previousWave } from '@/engine/insights'
+import { significantChanges, funnel, latestWave, previousWave, type SignificantChange } from '@/engine/insights'
 import { BRANDS, WAVES } from '@/engine/questions'
 import PageHeader from '@/components/PageHeader'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
@@ -80,6 +80,182 @@ function readSaved(r: unknown): { title: string; date: string } | null {
   return { title, date }
 }
 
+// ---------- Research Nudges ----------
+
+type NudgePriority = 'high' | 'medium' | 'low'
+
+interface ResearchNudge {
+  id: string
+  title: string
+  brand: string
+  metric: string
+  waveFrom: string
+  waveTo: string
+  current: number
+  previous: number
+  change: number
+  significance: -1 | 0 | 1
+  priority: NudgePriority
+  type: 'significant-change' | 'data-quality' | 'unusual-movement'
+  caveat: string
+  unweightedBase: number
+  questionId: string
+  score: number
+}
+
+function buildNudges(
+  changes: SignificantChange[],
+  efficiency: number,
+  _ff: ReturnType<typeof funnel>,
+  _cf: ReturnType<typeof funnel>,
+): ResearchNudge[] {
+  const nudges: ResearchNudge[] = []
+  const seen = new Set<string>()
+
+  // 1. Significant changes from existing wave-comparison analysis
+  for (const c of changes) {
+    const key = `${c.questionId}-${c.brandCode}`
+    if (seen.has(key)) continue
+    seen.add(key)
+
+    const metric = METRIC[c.questionId] ?? c.questionLabel.toLowerCase()
+    const up = c.direction === 1
+
+    let score = 3 // all items in changes are significant
+    if (Math.abs(c.change) >= 5) score += 2
+    else if (Math.abs(c.change) >= 3) score += 1
+    if (c.brand === FOCUS) score += 2
+    if (c.unweightedBase < 30) score -= 2
+    else if (c.unweightedBase < 60) score -= 1
+
+    const caveat = c.unweightedBase < 60
+      ? `Small base (n=${c.unweightedBase}) — treat as directional only.`
+      : `Change tested at 95% vs ${previousWave}.`
+
+    nudges.push({
+      id: `sig-${key}`,
+      title: `${c.brand} ${metric} ${up ? 'rose' : 'fell'} ${Math.abs(c.change)} pts`,
+      brand: c.brand,
+      metric,
+      waveFrom: previousWave,
+      waveTo: latestWave,
+      current: c.current,
+      previous: c.previous,
+      change: c.change,
+      significance: c.direction,
+      priority: score >= 6 ? 'high' : score >= 3 ? 'medium' : 'low',
+      type: 'significant-change',
+      caveat,
+      unweightedBase: c.unweightedBase,
+      questionId: c.questionId,
+      score,
+    })
+  }
+
+  // 2. Data-quality warning: low weighting efficiency
+  if (efficiency > 0 && efficiency < 0.9) {
+    nudges.push({
+      id: 'dq-efficiency',
+      title: 'Weighting efficiency below target',
+      brand: FOCUS,
+      metric: 'Weighting',
+      waveFrom: previousWave,
+      waveTo: latestWave,
+      current: Math.round(efficiency * 100),
+      previous: 100,
+      change: Math.round(efficiency * 100) - 100,
+      significance: 0,
+      priority: 'medium',
+      type: 'data-quality',
+      caveat: 'Low weighting efficiency means fewer differences will reach significance. Review weights in Weights.',
+      unweightedBase: 0,
+      questionId: 'Q1',
+      score: 4,
+    })
+  }
+
+  // 3. Unusual movement: funnel leak — awareness rose but trial did not
+  const campaAwareness = changes.find((c) => c.brand === FOCUS && c.questionId === 'Q1')
+  const campaTrial = changes.find((c) => c.brand === FOCUS && c.questionId === 'Q2')
+
+  if (campaAwareness && campaAwareness.direction === 1 && campaTrial && campaTrial.direction !== 1) {
+    const key = `funnel-leak-${FOCUS}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      nudges.push({
+        id: key,
+        title: `${FOCUS} awareness up but trial not keeping pace`,
+        brand: FOCUS,
+        metric: 'Funnel conversion',
+        waveFrom: previousWave,
+        waveTo: latestWave,
+        current: campaTrial.current,
+        previous: campaTrial.previous,
+        change: campaTrial.change,
+        significance: campaTrial.direction,
+        priority: 'high',
+        type: 'unusual-movement',
+        caveat: 'Awareness grew but trial did not — possible funnel leak. Check which age groups converted.',
+        unweightedBase: campaTrial.unweightedBase,
+        questionId: 'Q2',
+        score: 7,
+      })
+    }
+  }
+
+  // 4. Competitive threat: competitor main-brand share rose more than Campa
+  const campaMain = changes.find((c) => c.brand === FOCUS && c.questionId === 'Q3')
+  const compMain = changes.find((c) => c.brand === COMPARE && c.questionId === 'Q3')
+
+  if (compMain && compMain.direction === 1 && (!campaMain || campaMain.change < compMain.change)) {
+    const key = `comp-threat-${COMPARE}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      nudges.push({
+        id: key,
+        title: `${COMPARE} gaining on main-brand share`,
+        brand: COMPARE,
+        metric: 'Main-brand share',
+        waveFrom: previousWave,
+        waveTo: latestWave,
+        current: compMain.current,
+        previous: compMain.previous,
+        change: compMain.change,
+        significance: compMain.direction,
+        priority: campaMain ? 'high' : 'medium',
+        type: 'unusual-movement',
+        caveat: `${COMPARE} main-brand share rose ${compMain.change} pts — competitive pressure on ${FOCUS}.`,
+        unweightedBase: compMain.unweightedBase,
+        questionId: 'Q3',
+        score: 6,
+      })
+    }
+  }
+
+  nudges.sort((a, b) => b.score - a.score)
+  return nudges
+}
+
+function saveNudgeToStoryboard(nudge: ResearchNudge, addSavedResult: (result: unknown) => void): void {
+  const item = {
+    id: `nudge-${Date.now()}`,
+    title: `${nudge.title} — ${nudge.waveFrom} vs ${nudge.waveTo}`,
+    crossTab: {
+      row: nudge.questionId,
+      column: 'WAVE',
+      filters: [],
+      stat: 'colpct',
+      decimals: 0,
+    },
+    waveScope: 'All',
+    weighted: true,
+    view: 'both',
+    chartType: 'column',
+    savedAt: new Date().toISOString(),
+  }
+  addSavedResult(item)
+}
+
 // Sparkline scaled to its own data range so movement is visible.
 // The start/end labels underneath keep the scale honest.
 function Sparkline({ values, labelFirst, labelLast }: { values: number[]; labelFirst: string; labelLast: string }) {
@@ -115,6 +291,8 @@ export default function Home() {
   const crossTab = useLensStore((s) => s.crossTab)
   const savedResults = useLensStore((s) => s.savedResults)
   const openCrossTab = useLensStore((s) => s.openCrossTab)
+  const addAskQuestion = useLensStore((s) => s.addAskQuestion)
+  const addSavedResult = useLensStore((s) => s.addSavedResult)
   const [question, setQuestion] = useState('')
 
   const d = useMemo(() => {
@@ -184,6 +362,7 @@ export default function Home() {
   }, [])
 
   const { kpis, league, latestN, totalN, changes, ff, cf, efficiency } = d
+  const nudges = buildNudges(changes, efficiency, ff, cf)
   const nextWave = nextWaveLabel(latestWave)
   const savedCount = savedResults.filter((r) => readSaved(r) !== null).length
   const boardTitle = storyboardTitle()
@@ -306,26 +485,72 @@ export default function Home() {
               <h2 className="text-sm font-semibold text-foreground">What changed since {previousWave}</h2>
               <span className="text-xs text-muted-foreground">All brands tested on awareness, trial and main brand · 95%</span>
             </div>
-            {changes.length === 0 ? (
-              <p className="mt-4 text-sm text-muted-foreground">No significant changes since the previous wave.</p>
+            {nudges.length === 0 ? (
+              <p className="mt-4 text-sm text-muted-foreground">No research nudges for this wave.</p>
             ) : (
-              <ul className="mt-4 space-y-2">
-                {changes.map((c) => {
-                  const up = c.direction === 1
-                  const metric = METRIC[c.questionId] ?? c.questionLabel.toLowerCase()
+              <div className="mt-4 space-y-3">
+                {nudges.map((n) => {
+                  const up = n.change >= 0
+                  const sigColor = n.significance === 1 ? 'text-sig-high' : n.significance === -1 ? 'text-sig-low' : 'text-muted-foreground'
+                  const priorityBadge =
+                    n.priority === 'high'
+                      ? 'bg-sig-low/10 text-sig-low border border-sig-low/30'
+                      : n.priority === 'medium'
+                        ? 'bg-[#B45309]/10 text-[#B45309] border border-[#B45309]/30'
+                        : 'bg-muted/50 text-muted-foreground border border-muted/30'
+                  const typeLabel =
+                    n.type === 'data-quality'
+                      ? '⚠ Data quality'
+                      : n.type === 'unusual-movement'
+                        ? '⚠ Unusual movement'
+                        : '📊 Significant change'
                   return (
-                    <li key={`${c.questionId}-${c.brandCode}`} className="flex items-center gap-3 rounded-[10px] border border-border px-3 py-2.5">
-                      <span className={up ? 'text-sig-high' : 'text-sig-low'} aria-hidden="true">{up ? '▲' : '▼'}</span>
-                      <span className="min-w-0 flex-1 text-sm text-foreground">
-                        <span className={c.brand === FOCUS ? 'font-semibold' : ''}>{c.brand}</span> {metric} {up ? 'rose' : 'fell'} {Math.abs(c.change)} pts to {Math.round(c.current)}%
-                      </span>
-                      <button type="button" className="shrink-0 text-xs font-medium text-primary hover:underline" onClick={() => openCrossTab({ row: c.questionId, column: 'WAVE', filters: [] }, navigate)}>
-                        View table
-                      </button>
-                    </li>
+                    <div key={n.id} className={`${card} border-l-3 p-4 ${n.significance === 1 ? 'border-sig-high' : n.significance === -1 ? 'border-sig-low' : 'border-border'}`}>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-[10px] font-semibold ${priorityBadge} px-2 py-0.5 rounded`}>{n.priority} priority</span>
+                          <span className="text-[10px] text-muted-foreground">{typeLabel}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground">{n.waveFrom} → {n.waveTo}</span>
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground">{n.title}</h3>
+                      <p className={`mt-1 text-sm ${sigColor}`}>
+                        {n.brand} {n.metric} {up ? '▲' : '▼'} {Math.abs(n.change)} pts to {Math.round(n.current)}%
+                      </p>
+                      {n.caveat && (
+                        <p className="mt-1.5 text-xs text-muted-foreground">{n.caveat}</p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const q = `Why did ${n.brand} ${n.metric} ${up ? 'rose' : 'fell'} ${Math.abs(n.change)} pts in ${n.waveTo}?`
+                            addAskQuestion(q)
+                            navigate('/ask', { state: { question: q } })
+                          }}
+                          className="flex-1 h-8 rounded-[8px] border border-border px-3 text-xs font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        >
+                          Investigate in Ask AI
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openCrossTab({ row: n.questionId, column: 'WAVE', filters: [] }, navigate)}
+                          className="flex-1 h-8 rounded-[8px] border border-border px-3 text-xs font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        >
+                          Open in Cross-tabs
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => saveNudgeToStoryboard(n, addSavedResult)}
+                          className="flex-1 h-8 rounded-[8px] border border-border px-3 text-xs font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        >
+                          Save to storyboard
+                        </button>
+                      </div>
+                    </div>
                   )
                 })}
-              </ul>
+              </div>
             )}
           </div>
 

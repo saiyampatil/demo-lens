@@ -13,6 +13,8 @@ export interface SignificantChange {
   previous: number
   change: number
   direction: 1 | -1
+  unweightedBase: number
+  weightedBase: number
 }
 
 export function significantChanges(current: string, previous: string): SignificantChange[] {
@@ -46,6 +48,8 @@ export function significantChanges(current: string, previous: string): Significa
         previous: Math.round(previousCell.rawValue),
         change,
         direction,
+        unweightedBase: currentCell.unweightedBase,
+        weightedBase: currentCell.weightedBase,
       })
     }
   }
