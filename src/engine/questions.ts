@@ -1,3 +1,5 @@
+import { uploadedWaveNames } from './uploads'
+
 export const BRANDS = [
   { code: 1, label: 'Campa' },
   { code: 2, label: 'Thums Up' },
@@ -6,11 +8,33 @@ export const BRANDS = [
   { code: 5, label: 'Sprite' },
 ] as const
 
+const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+]
+
+function waveRank(label: string): number | null {
+  const m = /^([A-Za-z]{3})-(\d{2})$/.exec(label)
+  if (!m) return null
+  const mi = MONTHS.indexOf(m[1])
+  if (mi < 0) return null
+  return Number(m[2]) * 12 + mi
+}
+
 export type BrandCode = (typeof BRANDS)[number]['code']
 export type BrandName = (typeof BRANDS)[number]['label']
 
-export const WAVES = ['Oct-25', 'Jan-26', 'Apr-26'] as const
-export type Wave = (typeof WAVES)[number]
+const BUNDLED_WAVES: string[] = ['Oct-25', 'Jan-26', 'Apr-26']
+
+export const WAVES: readonly string[] = (() => {
+  const uploaded = uploadedWaveNames().filter((w) => !BUNDLED_WAVES.includes(w))
+  const dated = uploaded.filter((w) => waveRank(w) !== null)
+  const undated = uploaded.filter((w) => waveRank(w) === null)
+  dated.sort((a, b) => (waveRank(a)! - waveRank(b)!))
+  return [...BUNDLED_WAVES, ...dated, ...undated]
+})()
+
+export type Wave = string
 
 export interface Option {
   code: number

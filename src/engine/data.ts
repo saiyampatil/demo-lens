@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 import rawCsv from '../../data/campa_tracker_data.csv?raw'
+import { uploadedLines } from './uploads'
 
 export interface Respondent {
   resp_id: number
@@ -37,7 +38,9 @@ function parseCell(val: unknown): number | null {
 }
 
 export function parseData(csv: string = rawCsv): Respondent[] {
-  const result = Papa.parse<Record<string, string>>(csv, {
+  const extra = uploadedLines()
+  const text = extra.length > 0 ? `${csv}\n${extra.join('\n')}` : csv
+  const result = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: true,
   })

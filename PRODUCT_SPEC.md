@@ -19,7 +19,8 @@ and NOT a campaign dashboard.
 6. Storyboards
 
 Do NOT build: Visualize as a separate page (charts live inside Cross-tabs),
-Import/Review/Project Tree/Decision log, Norms, landing page, login.
+Review/Project Tree/Decision log, Norms, landing page, login.
+Waves: researchers can add a wave by uploading a CSV that matches the data map; it is validated and stored in the browser.
 
 ## Shell (identical on every screen)
 - Left sidebar, 240px, white, full height, right border.
