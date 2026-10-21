@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { type Filter } from '@/engine/crosstab'
+import type { Scope } from '@/domain/types'
 
 export type WaveScope = 'All' | 'Oct-25' | 'Jan-26' | 'Apr-26'
 
@@ -18,6 +19,8 @@ export interface LensState {
   savedResults: unknown[]
   crossTab: CrossTabConfig
   askHistory: { id: number; question: string }[]
+  scope: Scope
+  demoUserId: string
   setWaveScope: (scope: WaveScope) => void
   setWeighted: (weighted: boolean) => void
   addSavedResult: (result: unknown) => void
@@ -25,6 +28,8 @@ export interface LensState {
   openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => void
   addAskQuestion: (question: string) => void
   clearAskHistory: () => void
+  setScope: (scope: Scope) => void
+  setDemoUserId: (id: string) => void
 }
 
 export const useLensStore = create<LensState>()(
@@ -41,6 +46,8 @@ export const useLensStore = create<LensState>()(
         decimals: 0,
       },
       askHistory: [],
+      scope: { workspaceId: 'campa', studyId: 'campa-beverage-tracker' },
+      demoUserId: 'u-campa-admin',
       setWaveScope: (scope: WaveScope) => set({ waveScope: scope }),
       setWeighted: (weighted: boolean) => set({ weighted }),
       addSavedResult: (result: unknown) => set((state) => ({ savedResults: [...state.savedResults, result] })),
@@ -49,10 +56,12 @@ export const useLensStore = create<LensState>()(
       clearAskHistory: () => set({ askHistory: [] }),
       setCrossTab: (partial: Partial<CrossTabConfig>) =>
         set((state) => ({ crossTab: { ...state.crossTab, ...partial } })),
-  openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => {
-    set((state) => ({ crossTab: { ...state.crossTab, row: view.row, column: view.column, filters: view.filters } }))
-    navigate('/cross-tabs')
-  },
+      setScope: (scope: Scope) => set({ scope }),
+      setDemoUserId: (id: string) => set({ demoUserId: id }),
+      openCrossTab: (view: { row: string; column: string; filters: Filter[] }, navigate: (to: string) => void) => {
+        set((state) => ({ crossTab: { ...state.crossTab, row: view.row, column: view.column, filters: view.filters } }))
+        navigate('/cross-tabs')
+      },
     }),
     {
       name: 'lens-storage',

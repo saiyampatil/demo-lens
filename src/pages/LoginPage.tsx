@@ -6,6 +6,7 @@ import { SEED_USERS, SEED_MEMBERSHIPS, SEED_WORKSPACES, SEED_STUDIES } from '@/d
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 
+
 const DEMO_IDENTITIES = [
   { id: 'u-company-admin', name: 'Company Admin', role: 'company_admin' },
   { id: 'u-insights-lead', name: 'Insights Lead', role: 'company_insights' },
@@ -15,10 +16,12 @@ const DEMO_IDENTITIES = [
   { id: 'u-independence-researcher', name: 'Independence Researcher', role: 'researcher' },
 ]
 
+
 interface LoginFormValues {
   email: string
   password: string
 }
+
 
 export default function LoginPage() {
   const [form, setForm] = useState<LoginFormValues>({ email: '', password: '' })
@@ -26,11 +29,13 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const storedDemoId = localStorage.getItem('demoUserId')
 
+
   // If already logged in as demo, redirect to enterprise
   if (storedDemoId) {
     setDemoUserId(storedDemoId)
     return null
   }
+
 
   // Compute visible workspaces for the selected demo identity
   const computeVisibleWorkspaces = (userId: string) => {
@@ -38,6 +43,7 @@ export default function LoginPage() {
     const memberships = SEED_MEMBERSHIPS.filter((m) => m.userId === userId)
     return visibleWorkspaces(user, memberships, SEED_WORKSPACES)
   }
+
 
   if (selectedDemo) {
     const visible = computeVisibleWorkspaces(selectedDemo.id)
@@ -52,6 +58,7 @@ export default function LoginPage() {
     return null
   }
 
+
   return (
     <div className="min-h-screen bg-background p-6 sm:p-8">
       <div className="max-w-md mx-auto space-y-4">
@@ -63,6 +70,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-foreground mb-2">Pulse AI Lens</h1>
           <p className="text-muted-foreground">Mock login for founder presentation</p>
         </div>
+
 
         {/* Form Section */}
         <div className="bg-card border border-border rounded-[14px] p-6" style={{ maxWidth: '400px' }}>
@@ -93,6 +101,7 @@ export default function LoginPage() {
             <Button type="submit" className="w-full">Sign in</Button>
           </form>
         </div>
+
 
         {/* Demo Access Section */}
         <div className="bg-card border border-border rounded-[14px] p-6" style={{ maxWidth: '400px' }}>

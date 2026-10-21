@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { WAVES } from '@/engine/questions'
 
+
 const navGroups: { label: string; items: { name: string; path: string; icon: typeof Home }[] }[] = [
   {
     label: 'Analyse',
@@ -30,6 +31,7 @@ const navGroups: { label: string; items: { name: string; path: string; icon: typ
   },
 ]
 
+
 export default function Sidebar() {
   return (
     <aside className="w-[240px] min-w-[240px] max-w-[240px] h-screen bg-card border-r border-border flex flex-col justify-between shrink-0">
@@ -45,6 +47,7 @@ export default function Sidebar() {
           </span>
         </div>
 
+
         {/* Project (static, not interactive) */}
         <div className="p-3">
           <div className="w-full text-left p-2.5 rounded-lg border border-border bg-background">
@@ -56,6 +59,7 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+
 
         {/* Navigation Items */}
         <nav className="px-2 pb-2">
@@ -87,6 +91,7 @@ export default function Sidebar() {
           ))}
         </nav>
       </div>
+
 
       {/* User Avatar & Role at Bottom */}
       <div className="p-3 border-t border-border">

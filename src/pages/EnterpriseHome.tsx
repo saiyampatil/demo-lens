@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, User, Search, Filter, Shield, Trash2, X } from 'lucide-react'
 import { ENTERPRISE, SEED_MEMBERSHIPS, SEED_STUDIES, SEED_USERS, SEED_WORKSPACES } from '@/domain/registry'
-import { currentDemoUserId, setDemoUserId } from '@/domain/scope'
+import { currentDemoUserId, setDemoUserId, setScope } from '@/domain/scope'
 import { accessLabel, can, canCompany, visibleWorkspaces, roleIn, ROLE_LABEL } from '@/domain/permissions'
 import { Button } from '@/components/ui/button'
 import Select from '@/components/ui/Select'
 import PageHeader from '@/components/PageHeader'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 type BrandRole = 'brand_admin' | 'researcher' | 'viewer'
 
@@ -170,6 +170,9 @@ export default function EnterpriseHome() {
               </div>
               <p className="text-sm text-muted-foreground">across all brands</p>
             </CardContent>
+          </Card>
+        </div>
+
         <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2 w-full sm:w-auto max-w-md">
             <Search className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -467,3 +470,4 @@ export default function EnterpriseHome() {
     </div>
   )
 }
+
