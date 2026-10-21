@@ -6,6 +6,7 @@ import { crosstab, type Filter } from '@/engine/crosstab'
 import PageHeader from '@/components/PageHeader'
 import Select from '@/components/ui/Select'
 import { QUESTIONS, WAVES, BRANDS, type QuestionDef } from '@/engine/questions'
+import { buildGroupedRows, describeDef, setApplied, useApplied, useGroupings } from '@/engine/groupings'
 
 type Result = ReturnType<typeof crosstab>
 type ResultRow = Result['rows'][number]
@@ -136,18 +137,20 @@ export default function CrossTabs() {
   const [showBases, setShowBases] = useState(false)
   const [heat, setHeat] = useState(false)
   const [discoverOpen, setDiscoverOpen] = useState(false)
+  const [groupOpen, setGroupOpen] = useState(false)
 
   useEffect(() => {
-    if (!displayOpen && !menuFor) return
+    if (!displayOpen && !menuFor && !groupOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setDisplayOpen(false)
         setMenuFor(null)
+        setGroupOpen(false)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [displayOpen, menuFor])
+  }, [displayOpen, menuFor, groupOpen])
 
   useEffect(() => {
     if (!hint) return
@@ -306,6 +309,19 @@ export default function CrossTabs() {
     return { columns, rows }
   }, [runs])
 
+  // ---------- groupings (nets and classifications) ----------
+  const defs = useGroupings()
+  const applied = useApplied()
+  const applicable = defs.filter((d) => d.variables.includes(crossTab.row))
+  const grouped = useMemo(
+    () => buildGroupedRows({ rowVar: crossTab.row, baseRows: merged.rows, defs, applied, cols, filters, weighted }),
+    [crossTab.row, merged.rows, defs, applied, cols, filters, weighted],
+  )
+  const displayRows = grouped.rows
+  const groupingsActive = grouped.active.length > 0
+  const chartRows = displayRows.filter((r) => r.kind !== 'member' && (!isMean || !r.pct))
+  const clsValue = applicable.some((d) => d.id === applied.classification && d.type === 'classification') ? (applied.classification as string) : 'none'
+
   const otherCols = merged.columns.filter((c) => c.id !== 'TOTAL')
   const displayColumns = merged.columns
   const baseRow = merged.rows[0]
@@ -328,7 +344,7 @@ export default function CrossTabs() {
         ? 'no significance test'
         : 'significance vs Total at 95%'
   const statText = isMean ? 'means' : crossTab.stat === 'counts' ? (weighted ? 'weighted counts' : 'counts') : 'column %'
-  const definition = `Showing ${q?.label ?? crossTab.row} by ${colsLabel} · ${scopeText} · ${weighted ? 'weighted' : 'unweighted'} · ${statText} · ${sigText}`
+  const definition = `Showing ${q?.label ?? crossTab.row} by ${colsLabel} · ${scopeText} · ${weighted ? 'weighted' : 'unweighted'} · ${statText} · ${sigText}${groupingsActive ? ` · groupings: ${grouped.active.join(', ')}` : ''}`
   const displaySummary = [
     ...(weighted ? [] : ['unweighted']),
     ...(crossTab.stat === 'counts' ? ['counts'] : []),
@@ -338,17 +354,17 @@ export default function CrossTabs() {
   ].join(' · ')
   const scopeOptions = [{ value: 'All', label: 'All waves' }, ...WAVES.map((w) => ({ value: w, label: w }))]
 
-  const chartValue = (cell: ResultCell): number => {
-    if (isMean) return cell.rawValue
+  const chartValue = (cell: ResultCell, asMean: boolean = isMean): number => {
+    if (asMean) return cell.rawValue
     if (crossTab.stat === 'counts') return (cell.rawValue / 100) * (weighted ? cell.weightedBase : cell.unweightedBase)
     return cell.rawValue
   }
-  const fmtNumber = (v: number): string => {
-    if (isMean) return v.toFixed(decimals === 1 ? 2 : 1)
+  const fmtNumber = (v: number, asMean: boolean = isMean): string => {
+    if (asMean) return v.toFixed(decimals === 1 ? 2 : 1)
     if (crossTab.stat === 'counts') return Math.round(v).toLocaleString()
     return decimals === 1 ? `${v.toFixed(1)}%` : `${Math.round(v)}%`
   }
-  const fmtCell = (cell: ResultCell): string => (cell.hidden ? '–' : fmtNumber(chartValue(cell)))
+  const fmtCell = (cell: ResultCell, asMean: boolean = isMean): string => (cell.hidden ? '–' : fmtNumber(chartValue(cell, asMean), asMean))
 
   // ---------- Discover: every profile group tested against Total ----------
   const discover = useMemo(() => {
@@ -385,7 +401,7 @@ export default function CrossTabs() {
   const chartType: ChartType = chartPick && allowed[chartPick] ? chartPick : defaultType
   const useRowsOnX = chartType === 'hbar' || !xIsColumns
 
-  const series = merged.rows.map((r, i) => ({
+  const series = chartRows.map((r, i) => ({
     key: `s${i}`,
     label: r.label,
     isFocus: isBrand && r.label === BRAND_FOCUS,
@@ -400,7 +416,7 @@ export default function CrossTabs() {
     })
     return d
   })
-  const rowData = merged.rows.map((r) => {
+  const rowData = chartRows.map((r) => {
     const cell = r.cells['TOTAL']
     return { name: r.label, v: cell && !cell.hidden ? chartValue(cell) : null }
   })
@@ -461,7 +477,7 @@ export default function CrossTabs() {
       savedAt: new Date().toISOString(),
     }))
     useLensStore.setState((s: StoreState) => ({ savedResults: [...s.savedResults, ...items] as StoreState['savedResults'] }))
-    setToast(items.length > 1 ? `Saved ${items.length} slides, one per column group` : 'Saved to storyboard')
+    setToast(groupingsActive ? 'Saved without groupings (slides do not support them yet)' : items.length > 1 ? `Saved ${items.length} slides, one per column group` : 'Saved to storyboard')
     window.setTimeout(() => setToast(''), 4000)
   }
 
@@ -470,13 +486,14 @@ export default function CrossTabs() {
     const head = (c: MCol) => (multi && c.group ? `${columnLabel(c.group)}: ${c.label}` : c.label)
     const lines: string[] = [esc(definition), '']
     lines.push([esc(q?.label ?? crossTab.row), ...displayColumns.map((c) => esc(head(c)))].join(','))
-    merged.rows.forEach((r) => {
+    displayRows.forEach((r) => {
+      const rowMean = isMean && !r.pct
       lines.push(
-        [esc(r.label), ...displayColumns.map((c) => {
+        [esc((r.kind === 'member' ? '   ' : '') + r.label), ...displayColumns.map((c) => {
           const cell = r.cells[c.id]
           if (!cell) return esc('–')
-          const arrow = !isMean && !cell.hidden && c.id !== 'TOTAL' ? (cell.significance === 1 ? ' ▲' : cell.significance === -1 ? ' ▼' : '') : ''
-          return esc(fmtCell(cell) + arrow)
+          const arrow = !rowMean && !cell.hidden && c.id !== 'TOTAL' ? (cell.significance === 1 ? ' ▲' : cell.significance === -1 ? ' ▼' : '') : ''
+          return esc(fmtCell(cell, rowMean) + arrow)
         })].join(','),
       )
     })
@@ -725,6 +742,79 @@ export default function CrossTabs() {
                   </span>
                 </label>
                 <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setGroupOpen((o) => !o)}
+                      aria-expanded={groupOpen}
+                      className={`h-8 rounded-[10px] border px-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/40 ${groupingsActive ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-background text-foreground hover:bg-muted'}`}
+                    >
+                      Groupings{groupingsActive ? ` · ${grouped.active.length}` : ''}
+                    </button>
+                    {groupOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setGroupOpen(false)} />
+                        <div className={`${card} absolute right-0 top-10 z-20 w-80 space-y-4 p-4 shadow-lg`}>
+                          <p className="text-xs font-medium text-muted-foreground">Groupings for {rowLabel}</p>
+                          {applicable.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No groupings for this question yet.</p>
+                          ) : (
+                            <>
+                              {applicable.some((d) => d.type === 'net') && (
+                                <div>
+                                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">Add net rows</p>
+                                  <div className="space-y-2">
+                                    {applicable.filter((d) => d.type === 'net').map((d) => (
+                                      <label key={d.id} className="flex cursor-pointer items-start gap-2 text-sm text-foreground">
+                                        <input
+                                          type="checkbox"
+                                          className="mt-0.5 accent-primary"
+                                          checked={applied.nets.includes(d.id)}
+                                          onChange={() => setApplied({ nets: applied.nets.includes(d.id) ? applied.nets.filter((x) => x !== d.id) : [...applied.nets, d.id] })}
+                                        />
+                                        <span>
+                                          {d.name}
+                                          <span className="block text-xs text-muted-foreground">{describeDef(d)}</span>
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {applicable.some((d) => d.type === 'classification') && !isMean && (
+                                <div>
+                                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">Group rows by</p>
+                                  <Select
+                                    label="Group rows by"
+                                    value={clsValue}
+                                    onChange={(v) => setApplied({ classification: v === 'none' ? null : v })}
+                                    options={[{ value: 'none', label: 'None' }, ...applicable.filter((d) => d.type === 'classification').map((d) => ({ value: d.id, label: d.name }))]}
+                                    className="w-full"
+                                  />
+                                  {clsValue !== 'none' && (
+                                    <label className="mt-2 flex cursor-pointer items-center gap-1.5 text-xs text-foreground">
+                                      <input type="checkbox" className="accent-primary" checked={applied.showMembers} onChange={(e) => setApplied({ showMembers: e.target.checked })} />
+                                      Show members under each group
+                                    </label>
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                          <div className="flex items-center justify-between border-t border-border pt-3">
+                            <button type="button" onClick={() => { setGroupOpen(false); navigate('/groupings') }} className="text-xs font-medium text-primary hover:underline">
+                              Manage groupings →
+                            </button>
+                            {groupingsActive && (
+                              <button type="button" onClick={() => setApplied({ nets: [], classification: null })} className="text-xs text-muted-foreground hover:text-foreground">
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setDiscoverOpen((o) => !o)}
@@ -789,6 +879,11 @@ export default function CrossTabs() {
             {hint && <p role="status" className="rounded-[10px] bg-[#FEF4E6] px-3 py-2 text-xs text-[#B45309]">{hint}</p>}
             {displaySummary && <p className="text-xs text-muted-foreground">Display: {displaySummary}</p>}
             <p className="text-sm text-muted-foreground">{definition}</p>
+            {groupingsActive && (
+              <p className="text-xs text-muted-foreground">
+                Groupings applied: {grouped.active.join(', ')}.{isMean && displayRows.some((r) => r.pct) ? ' Net rows show % of respondents; the other rows show means.' : ''} Saved slides do not include groupings yet.
+              </p>
+            )}
             {WEIGHTING_VARS.includes(crossTab.row) && weighted && (
               <p className="text-xs text-muted-foreground">{rowLabel} is a weighting variable, so its weighted shares match the study targets.</p>
             )}
@@ -860,29 +955,33 @@ export default function CrossTabs() {
                       </tr>
                     </thead>
                     <tbody>
-                      {merged.rows.map((row) => {
-                        const isFocus = isBrand && row.label === BRAND_FOCUS
-                        const heatVals = otherCols.map((c) => row.cells[c.id]).filter((c): c is ResultCell => !!c && !c.hidden).map(chartValue)
+                      {displayRows.map((row) => {
+                        const rowMean = isMean && !row.pct
+                        const isFocus = isBrand && row.kind === 'base' && row.label === BRAND_FOCUS
+                        const isGroupRow = row.kind === 'parent' || row.kind === 'unclassified'
+                        const heatVals = otherCols.map((c) => row.cells[c.id]).filter((c): c is ResultCell => !!c && !c.hidden).map((c) => chartValue(c, rowMean))
                         const hMin = heatVals.length ? Math.min(...heatVals) : 0
                         const hMax = heatVals.length ? Math.max(...heatVals) : 0
                         return (
-                          <tr key={String(row.id)} className={`border-t border-border ${isFocus ? 'bg-primary/5' : ''}`}>
-                            <td className="px-4 py-2.5 text-foreground">
-                              <span className={isFocus ? 'font-semibold' : ''}>{row.label}</span>
+                          <tr key={row.id} className={`border-t border-border ${isFocus || row.kind === 'net' ? 'bg-primary/5' : isGroupRow ? 'bg-muted/40' : ''}`}>
+                            <td className={`px-4 py-2.5 text-foreground ${row.kind === 'member' ? 'pl-9' : ''}`}>
+                              <span className={isFocus || isGroupRow ? 'font-semibold' : row.kind === 'member' ? 'text-muted-foreground' : ''}>{row.label}</span>
                               {isFocus && <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">Focus brand</span>}
+                              {row.kind === 'net' && <span title={row.note} className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">Net</span>}
+                              {row.kind === 'unclassified' && <span title={row.note} className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">Not grouped</span>}
                             </td>
                             {displayColumns.map((col) => {
                               const cell = row.cells[col.id]
                               const border = multi && groupStarts.has(col.id) ? 'border-l border-border' : ''
                               if (!cell) return <td key={col.id} className={`px-4 py-2.5 text-right text-muted-foreground ${border}`}>–</td>
-                              const showArrow = !isMean && !cell.hidden && col.id !== 'TOTAL' && cell.significance !== 0
+                              const showArrow = !rowMean && !cell.hidden && col.id !== 'TOTAL' && cell.significance !== 0
                               const shade =
                                 heat && col.id !== 'TOTAL' && !cell.hidden && hMax > hMin
-                                  ? { backgroundColor: `rgba(107, 71, 214, ${(0.04 + ((chartValue(cell) - hMin) / (hMax - hMin)) * 0.2).toFixed(3)})` }
+                                  ? { backgroundColor: `rgba(107, 71, 214, ${(0.04 + ((chartValue(cell, rowMean) - hMin) / (hMax - hMin)) * 0.2).toFixed(3)})` }
                                   : undefined
                               return (
-                                <td key={col.id} style={shade} className={`px-4 py-2.5 text-right tabular-nums ${cell.hidden ? 'text-muted-foreground' : 'text-foreground'} ${isFocus ? 'font-semibold' : ''} ${border}`}>
-                                  {fmtCell(cell)}
+                                <td key={col.id} style={shade} className={`px-4 py-2.5 text-right tabular-nums ${cell.hidden ? 'text-muted-foreground' : 'text-foreground'} ${isFocus || isGroupRow ? 'font-semibold' : ''} ${border}`}>
+                                  {fmtCell(cell, rowMean)}
                                   {showArrow && <span className={`ml-1 ${cell.significance === 1 ? 'text-sig-high' : 'text-sig-low'}`}>{cell.significance === 1 ? '▲' : '▼'}</span>}
                                   {showBases && <span className="block font-mono text-xs font-normal text-muted-foreground">n={cell.unweightedBase.toLocaleString()}</span>}
                                 </td>

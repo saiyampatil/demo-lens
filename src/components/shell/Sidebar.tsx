@@ -6,6 +6,7 @@ import {
   Sparkles,
   Scale,
   LayoutDashboard,
+  Layers,
 } from 'lucide-react'
 import { WAVES } from '@/engine/questions'
 
@@ -24,6 +25,7 @@ const navGroups: { label: string; items: { name: string; path: string; icon: typ
     items: [
       { name: 'Waves', path: '/waves', icon: Activity },
       { name: 'Weights', path: '/weights', icon: Scale },
+      { name: 'Groupings', path: '/groupings', icon: Layers },
     ],
   },
 ]
