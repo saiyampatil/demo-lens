@@ -7,6 +7,7 @@ import AskAI from '@/pages/AskAI'
 import Weights from '@/pages/Weights'
 import Storyboards from '@/pages/Storyboards'
 import Groupings from '@/pages/Groupings'
+import EnterpriseHome from '@/pages/EnterpriseHome'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
+        <Route path="/enterprise" element={<EnterpriseHome />} />
       </Routes>
     </HashRouter>
   )

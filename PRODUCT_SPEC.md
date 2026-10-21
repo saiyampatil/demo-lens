@@ -83,3 +83,10 @@ a placeholder or is disabled), publishing dashboards, RIM weight creation, Norms
 ## Done when
 Each screen renders with no console errors, every number matches the CSV analysis,
 and the sidebar shows exactly one active item on every page.
+
+## Enterprise hierarchy and access (browser-only)
+- Hierarchy: Enterprise > Brand (workspace) > Study > Wave.
+- Five roles: Company admin, Company insights, Brand admin, Researcher, Viewer.
+- Hidden-brand rule: brand users never see brands they are not a member of.
+- Template rule: new studies follow the Lens data-map template.
+- Browser-only limit: no real client data; SSO arrives with the backend.
